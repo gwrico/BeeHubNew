@@ -35,7 +35,7 @@ SimpleGUI.Themes = {
         
         -- Border & Effects
         Border = Color3.fromRGB(40, 40, 45),
-        BorderLight = Color3.fromRGB(255, 40, 40, 0.5), -- Merah transparan untuk border
+        BorderLight = Color3.fromRGB(255, 40, 40, 0.3), -- Merah transparan untuk border
         BorderGlow = Color3.fromRGB(255, 40, 40, 0.3),  -- Glow merah
         
         Hover = Color3.fromRGB(255, 40, 40, 0.2),       -- Merah transparan untuk hover
@@ -51,7 +51,7 @@ SimpleGUI.Themes = {
         TabHover = Color3.fromRGB(35, 35, 45),
         
         ContentBg = Color3.fromRGB(8, 8, 12),
-        ContentBgLight = Color3.fromRGB(15, 15, 20),
+        ContentBgLight = Color3.fromRGB(15, 15, 20),    -- Untuk background card
         
         Button = Color3.fromRGB(25, 25, 32),
         ButtonHover = Color3.fromRGB(45, 45, 55),
@@ -474,7 +474,7 @@ function SimpleGUI:CreateWindow(options)
     ContentContainer.Parent = ContentFrame
     
     local ContentList = Instance.new("UIListLayout")
-    ContentList.Padding = UDim.new(0, 15 * scale)
+    ContentList.Padding = UDim.new(0, 12 * scale)
     ContentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     ContentList.SortOrder = Enum.SortOrder.LayoutOrder
     ContentList.Parent = ContentContainer
@@ -620,7 +620,7 @@ function SimpleGUI:CreateWindow(options)
         TabContent.Parent = ContentContainer
         
         local TabLayout = Instance.new("UIListLayout")
-        TabLayout.Padding = UDim.new(0, 15 * scale)
+        TabLayout.Padding = UDim.new(0, 12 * scale)
         TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
         TabLayout.Parent = TabContent
@@ -763,23 +763,36 @@ function SimpleGUI:CreateWindow(options)
                 return Label
             end,
             
-            -- ===== CREATE TOGGLE (DIPERBAIKI - TOGGLE DI KANAN) =====
+            -- ===== CREATE TOGGLE DENGAN BORDER (YANG DIPERBARUI) =====
             CreateToggle = function(self, options)
                 local opts = options or {}
                 local scale = windowData.Scale
                 
+                -- Main container dengan border
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Name = opts.Name or "Toggle_" .. #self.Elements + 1
-                ToggleFrame.Size = UDim2.new(0.95, 0, 0, 40 * scale)
-                ToggleFrame.BackgroundTransparency = 1
+                ToggleFrame.Size = UDim2.new(0.95, 0, 0, 44 * scale)  -- Lebih tinggi sedikit
+                ToggleFrame.BackgroundColor3 = theme.ContentBgLight
+                ToggleFrame.BackgroundTransparency = 0
+                ToggleFrame.BorderSizePixel = 1
+                ToggleFrame.BorderColor3 = theme.BorderLight
                 ToggleFrame.LayoutOrder = #self.Elements + 1
                 ToggleFrame.Parent = TabContent
+                
+                -- Rounded corners untuk container
+                local FrameCorner = Instance.new("UICorner")
+                FrameCorner.CornerRadius = UDim.new(0, 8 * scale)
+                FrameCorner.Parent = ToggleFrame
+                
+                -- Efek glow tipis di border (opsional)
+                local FrameGlow = createGlow(ToggleFrame, theme.AccentGlow, UDim2.new(1, 6, 1, 6))
+                FrameGlow.ImageTransparency = 0.8
                 
                 -- Toggle label (teks menu) di KIRI
                 local ToggleLabel = Instance.new("TextLabel")
                 ToggleLabel.Name = "ToggleLabel"
-                ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)  -- 70% lebar untuk teks
-                ToggleLabel.Position = UDim2.new(0, 0, 0, 0)
+                ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+                ToggleLabel.Position = UDim2.new(0, 12 * scale, 0, 0)  -- Beri padding kiri
                 ToggleLabel.Text = opts.Text or opts.Name or "Toggle"
                 ToggleLabel.TextColor3 = theme.Text
                 ToggleLabel.BackgroundTransparency = 1
@@ -792,7 +805,7 @@ function SimpleGUI:CreateWindow(options)
                 local ToggleContainer = Instance.new("TextButton")
                 ToggleContainer.Name = "ToggleContainer"
                 ToggleContainer.Size = UDim2.new(0, 48 * scale, 0, 24 * scale)
-                ToggleContainer.Position = UDim2.new(1, -58 * scale, 0.5, -12 * scale)  -- Posisi di kanan
+                ToggleContainer.Position = UDim2.new(1, -58 * scale, 0.5, -12 * scale)
                 ToggleContainer.Text = ""
                 ToggleContainer.BackgroundColor3 = theme.ToggleOff
                 ToggleContainer.BackgroundTransparency = 0
@@ -818,7 +831,7 @@ function SimpleGUI:CreateWindow(options)
                 CircleCorner.CornerRadius = UDim.new(0.5, 0)
                 CircleCorner.Parent = ToggleCircle
                 
-                -- Glow effect (opsional)
+                -- Glow effect untuk toggle container
                 local ToggleGlow = createGlow(ToggleContainer, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
                 ToggleGlow.ImageTransparency = 1
                 
@@ -830,10 +843,12 @@ function SimpleGUI:CreateWindow(options)
                         tween(ToggleContainer, {BackgroundColor3 = theme.ToggleOn}, 0.2)
                         tween(ToggleCircle, {Position = UDim2.new(1, -22 * scale, 0.5, -10 * scale)}, 0.2)
                         tween(ToggleGlow, {ImageTransparency = 0.5}, 0.2)
+                        tween(ToggleFrame, {BorderColor3 = theme.Accent}, 0.2)  -- Border berubah warna saat aktif
                     else
                         tween(ToggleContainer, {BackgroundColor3 = theme.ToggleOff}, 0.2)
                         tween(ToggleCircle, {Position = UDim2.new(0, 2 * scale, 0.5, -10 * scale)}, 0.2)
                         tween(ToggleGlow, {ImageTransparency = 1}, 0.2)
+                        tween(ToggleFrame, {BorderColor3 = theme.BorderLight}, 0.2)
                     end
                 end
                 
@@ -849,10 +864,23 @@ function SimpleGUI:CreateWindow(options)
                 
                 ToggleContainer.MouseButton1Click:Connect(toggle)
                 
-                -- Bisa juga klik label untuk toggle
+                -- Klik label juga untuk toggle
                 ToggleLabel.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         toggle()
+                    end
+                end)
+                
+                -- Hover effect pada frame
+                ToggleFrame.MouseEnter:Connect(function()
+                    if not isMobile then
+                        tween(ToggleFrame, {BackgroundColor3 = theme.ContentBgLight}, 0.15)
+                    end
+                end)
+                
+                ToggleFrame.MouseLeave:Connect(function()
+                    if not isMobile then
+                        tween(ToggleFrame, {BackgroundColor3 = theme.ContentBgLight}, 0.15)
                     end
                 end)
                 
@@ -1395,10 +1423,10 @@ function SimpleGUI:CreateWindow(options)
     MinimizedIcon.Name = "MinimizedIcon_Bee"
     MinimizedIcon.Size = UDim2.new(0, 48 * scale, 0, 48 * scale)
     MinimizedIcon.Position = UDim2.new(0, 20, 0, 20)
-    MinimizedIcon.Text = "B"  -- ← UBAH KE "B"
-    MinimizedIcon.TextColor3 = theme.Accent  -- ← WARNA MERAH
-    MinimizedIcon.BackgroundTransparency = 1  -- ← BACKGROUND TRANSPARAN
-    MinimizedIcon.TextSize = 32 * scale  -- ← LEBIH BESAR
+    MinimizedIcon.Text = "B"  -- UBAH KE "B"
+    MinimizedIcon.TextColor3 = theme.Accent  -- WARNA MERAH
+    MinimizedIcon.BackgroundTransparency = 1  -- BACKGROUND TRANSPARAN
+    MinimizedIcon.TextSize = 32 * scale  -- LEBIH BESAR
     MinimizedIcon.Font = Enum.Font.GothamBlack
     MinimizedIcon.Visible = false
     MinimizedIcon.Parent = self.ScreenGui
@@ -1409,7 +1437,7 @@ function SimpleGUI:CreateWindow(options)
     self.MinimizedIcons[windowData.Name] = {
         Icon = MinimizedIcon,
         UpdateTheme = function(self, newTheme)
-            MinimizedIcon.TextColor3 = newTheme.Accent  -- ← HANYA UPDATE WARNA TEXT
+            MinimizedIcon.TextColor3 = newTheme.Accent  -- HANYA UPDATE WARNA TEXT
         end
     }
     
