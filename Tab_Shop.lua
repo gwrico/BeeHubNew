@@ -19,7 +19,10 @@ function ShopAutoBuy.Init(Dependencies)
         Button = Color3.fromRGB(25, 25, 32),
         ButtonHover = Color3.fromRGB(45, 45, 55),
         InputBg = Color3.fromRGB(30, 30, 40),
-        ToggleOff = Color3.fromRGB(50, 50, 60)
+        ToggleOff = Color3.fromRGB(50, 50, 60),
+        BorderLight = Color3.fromRGB(70, 70, 80),
+        BorderRed = Color3.fromRGB(255, 40, 40),
+        ContentCard = Color3.fromRGB(20, 20, 25)
     }
     
     -- Get services
@@ -57,7 +60,7 @@ function ShopAutoBuy.Init(Dependencies)
         {Display = "🍅 Tomat", Name = "Bibit Tomat"},
         {Display = "🍆 Terong", Name = "Bibit Terong"},
         {Display = "🍓 Strawberry", Name = "Bibit Strawberry"},
-        {Display = "None", Name = "None"}
+        {Display = "❌ None", Name = "None"}
     }
     
     -- Buat array terpisah untuk dropdown options (hanya display names)
@@ -83,9 +86,7 @@ function ShopAutoBuy.Init(Dependencies)
     -- Variable untuk menyimpan references
     local dropdownRef = nil
     local infoLabelRef = nil
-    local qtyInputRef = nil
-    local delayInputRef = nil
-    local autoBuyToggleRef = nil
+    local statusLabelRef = nil
     
     -- ===== FUNGSI CEK REMOTE =====
     local function checkRemote()
@@ -151,12 +152,17 @@ function ShopAutoBuy.Init(Dependencies)
             Duration = 3
         })
         
+        if statusLabelRef then
+            statusLabelRef.Text = "● Status: AKTIF"
+            statusLabelRef.TextColor3 = theme.Accent
+        end
+        
         local lastBuyTime = 0
         autoBuyConnection = RunService.Heartbeat:Connect(function()
             if not autoBuyEnabled then return end
             
             if tick() - lastBuyTime >= buyDelay then
-                buySeed(selectedSeed, buyQuantity)
+                buySeed(selectedSeed, buyQuantity, true)  -- true = isAuto
                 lastBuyTime = tick()
             end
         end)
@@ -174,6 +180,11 @@ function ShopAutoBuy.Init(Dependencies)
             Content = "Dihentikan",
             Duration = 2
         })
+        
+        if statusLabelRef then
+            statusLabelRef.Text = "● Status: NONAKTIF"
+            statusLabelRef.TextColor3 = theme.TextSecondary
+        end
     end
     
     -- ===== FUNGSI UPDATE INFO LABEL =====
@@ -183,21 +194,22 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end
     
-    -- ===== MEMBUAT UI DENGAN DROPDOWN =====
+    -- ===== MEMBUAT UI DENGAN DROPDOWN SAMPING =====
     
-    -- 1. PILIH BIBIT SECTION
+    -- 1. HEADER UTAMA
     local header1 = Tab:CreateLabel({
-        Name = "Header_PilihBibit",
-        Text = "───── 🌱 PILIH BIBIT ─────",
-        Color = theme.Accent,  -- MERAH
+        Name = "Header_Shop",
+        Text = "───── 🛒 SHOP BIBIT ─────",
+        Color = theme.Accent,
         Bold = true,
         Alignment = Enum.TextXAlignment.Center
     })
     
-    -- DROPDOWN untuk memilih bibit
+    -- 2. DROPDOWN (LABEL DI SAMPING KIRI, BUTTON DI KANAN)
+    -- Method CreateDropdown di SimpleGUI sudah mengatur ini secara otomatis
     dropdownRef = Tab:CreateDropdown({
         Name = "SeedDropdown",
-        Text = "Pilih Bibit:",
+        Text = "Pilih Bibit:",  -- Label akan di kiri
         Options = seedDisplayOptions,
         Default = seedDisplayOptions[1],
         Callback = function(value)
@@ -211,8 +223,7 @@ function ShopAutoBuy.Init(Dependencies)
                 Duration = 1
             })
             
-            print("✅ Dipilih:", value, "->", selectedSeed)
-            
+            -- Jika auto buy sedang aktif, restart dengan bibit baru
             if autoBuyEnabled then
                 stopAutoBuy()
                 startAutoBuy()
@@ -220,53 +231,83 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Label info untuk menampilkan bibit yang dipilih
+    -- 3. INFO BIBIT AKTIF
     infoLabelRef = Tab:CreateLabel({
         Name = "InfoLabel",
         Text = "➤ Bibit aktif: " .. selectedDisplay,
-        Color = theme.Text,  -- PUTIH
+        Color = theme.Text,
         Alignment = Enum.TextXAlignment.Left
     })
     
-    -- Spacer
+    -- 4. STATUS AUTO BUY
+    statusLabelRef = Tab:CreateLabel({
+        Name = "StatusLabel",
+        Text = "● Status: NONAKTIF",
+        Color = theme.TextSecondary,
+        Alignment = Enum.TextXAlignment.Left
+    })
+    
+    -- 5. SPACER
     Tab:CreateLabel({
         Name = "Spacer1",
         Text = "",
         Alignment = Enum.TextXAlignment.Center
     })
     
-    -- 2. PENGATURAN & AUTO BUY SECTION
+    -- 6. HEADER PENGATURAN
     local header2 = Tab:CreateLabel({
-        Name = "Header_PengaturanAuto",
-        Text = "───── ⚙️ PENGATURAN & AUTO BUY ─────",
-        Color = theme.Accent,  -- MERAH
+        Name = "Header_Pengaturan",
+        Text = "───── ⚙️ PENGATURAN ─────",
+        Color = theme.Accent,
         Bold = true,
         Alignment = Enum.TextXAlignment.Center
     })
     
-    -- Frame untuk pengaturan dalam satu baris
+    -- 7. FRAME UNTUK QUANTITY DAN DELAY (SEJAJAR)
     local SettingsFrame = Instance.new("Frame")
     SettingsFrame.Name = "SettingsFrame"
-    SettingsFrame.Size = UDim2.new(0.95, 0, 0, 40)
-    SettingsFrame.BackgroundTransparency = 1
+    SettingsFrame.Size = UDim2.new(0.95, 0, 0, 50)
+    SettingsFrame.BackgroundColor3 = theme.ContentCard
+    SettingsFrame.BackgroundTransparency = 0
+    SettingsFrame.BorderSizePixel = 2
+    SettingsFrame.BorderColor3 = theme.BorderLight
     SettingsFrame.LayoutOrder = #Tab.Elements + 1
     SettingsFrame.Parent = Tab.Content
+    
+    -- Rounded corners untuk frame
+    local SettingsCorner = Instance.new("UICorner")
+    SettingsCorner.CornerRadius = UDim.new(0, 8)
+    SettingsCorner.Parent = SettingsFrame
+    
+    -- Inner frame untuk padding
+    local SettingsInner = Instance.new("Frame")
+    SettingsInner.Name = "SettingsInner"
+    SettingsInner.Size = UDim2.new(1, -4, 1, -4)
+    SettingsInner.Position = UDim2.new(0, 2, 0, 2)
+    SettingsInner.BackgroundColor3 = theme.ContentCard
+    SettingsInner.BackgroundTransparency = 0
+    SettingsInner.BorderSizePixel = 0
+    SettingsInner.Parent = SettingsFrame
+    
+    local SettingsInnerCorner = Instance.new("UICorner")
+    SettingsInnerCorner.CornerRadius = UDim.new(0, 6)
+    SettingsInnerCorner.Parent = SettingsInner
     
     -- Layout horizontal untuk settings
     local SettingsLayout = Instance.new("UIListLayout")
     SettingsLayout.FillDirection = Enum.FillDirection.Horizontal
     SettingsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     SettingsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    SettingsLayout.Padding = UDim.new(0, 10)
-    SettingsLayout.Parent = SettingsFrame
+    SettingsLayout.Padding = UDim.new(0, 15)
+    SettingsLayout.Parent = SettingsInner
     
-    -- TextBox untuk Jumlah
+    -- === QUANTITY CONTROL ===
     local QtyFrame = Instance.new("Frame")
     QtyFrame.Name = "QtyFrame"
-    QtyFrame.Size = UDim2.new(0, 80, 0, 36)
-    QtyFrame.BackgroundColor3 = theme.InputBg  -- HITAM
+    QtyFrame.Size = UDim2.new(0, 120, 0, 36)
+    QtyFrame.BackgroundColor3 = theme.InputBg
     QtyFrame.BackgroundTransparency = 0
-    QtyFrame.Parent = SettingsFrame
+    QtyFrame.Parent = SettingsInner
     
     local QtyCorner = Instance.new("UICorner")
     QtyCorner.CornerRadius = UDim.new(0, 6)
@@ -274,9 +315,9 @@ function ShopAutoBuy.Init(Dependencies)
     
     local QtyLabel = Instance.new("TextLabel")
     QtyLabel.Name = "QtyLabel"
-    QtyLabel.Size = UDim2.new(0, 30, 1, 0)
-    QtyLabel.Text = "x"
-    QtyLabel.TextColor3 = theme.Accent  -- MERAH
+    QtyLabel.Size = UDim2.new(0, 35, 1, 0)
+    QtyLabel.Text = "🔢"
+    QtyLabel.TextColor3 = theme.Accent
     QtyLabel.BackgroundTransparency = 1
     QtyLabel.TextSize = 16
     QtyLabel.Font = Enum.Font.GothamBold
@@ -284,23 +325,23 @@ function ShopAutoBuy.Init(Dependencies)
     
     local QtyBox = Instance.new("TextBox")
     QtyBox.Name = "QtyBox"
-    QtyBox.Size = UDim2.new(1, -30, 1, 0)
-    QtyBox.Position = UDim2.new(0, 30, 0, 0)
+    QtyBox.Size = UDim2.new(1, -35, 1, 0)
+    QtyBox.Position = UDim2.new(0, 35, 0, 0)
     QtyBox.Text = tostring(buyQuantity)
-    QtyBox.TextColor3 = theme.Text  -- PUTIH
+    QtyBox.TextColor3 = theme.Text
     QtyBox.BackgroundTransparency = 1
     QtyBox.TextSize = 14
     QtyBox.Font = Enum.Font.Gotham
     QtyBox.ClearTextOnFocus = false
     QtyBox.Parent = QtyFrame
     
-    -- TextBox untuk Delay
+    -- === DELAY CONTROL ===
     local DelayFrame = Instance.new("Frame")
     DelayFrame.Name = "DelayFrame"
-    DelayFrame.Size = UDim2.new(0, 100, 0, 36)
-    DelayFrame.BackgroundColor3 = theme.InputBg  -- HITAM
+    DelayFrame.Size = UDim2.new(0, 130, 0, 36)
+    DelayFrame.BackgroundColor3 = theme.InputBg
     DelayFrame.BackgroundTransparency = 0
-    DelayFrame.Parent = SettingsFrame
+    DelayFrame.Parent = SettingsInner
     
     local DelayCorner = Instance.new("UICorner")
     DelayCorner.CornerRadius = UDim.new(0, 6)
@@ -310,7 +351,7 @@ function ShopAutoBuy.Init(Dependencies)
     DelayLabel.Name = "DelayLabel"
     DelayLabel.Size = UDim2.new(0, 40, 1, 0)
     DelayLabel.Text = "⏱️"
-    DelayLabel.TextColor3 = theme.Accent  -- MERAH
+    DelayLabel.TextColor3 = theme.Accent
     DelayLabel.BackgroundTransparency = 1
     DelayLabel.TextSize = 16
     DelayLabel.Font = Enum.Font.GothamBold
@@ -321,14 +362,14 @@ function ShopAutoBuy.Init(Dependencies)
     DelayBox.Size = UDim2.new(1, -40, 1, 0)
     DelayBox.Position = UDim2.new(0, 40, 0, 0)
     DelayBox.Text = tostring(buyDelay) .. "s"
-    DelayBox.TextColor3 = theme.Text  -- PUTIH
+    DelayBox.TextColor3 = theme.Text
     DelayBox.BackgroundTransparency = 1
     DelayBox.TextSize = 14
     DelayBox.Font = Enum.Font.Gotham
     DelayBox.ClearTextOnFocus = false
     DelayBox.Parent = DelayFrame
     
-    -- Fungsi untuk validasi input
+    -- Validasi Quantity
     QtyBox.FocusLost:Connect(function()
         local value = tonumber(QtyBox.Text)
         if value and value >= 1 and value <= 99 then
@@ -344,6 +385,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
+    -- Validasi Delay
     DelayBox.FocusLost:Connect(function()
         local text = DelayBox.Text:gsub("s", "")
         local value = tonumber(text)
@@ -365,67 +407,87 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
-    -- Tombol Aksi Cepat
+    -- 8. FRAME UNTUK TOMBOL AKSI
     local ActionFrame = Instance.new("Frame")
     ActionFrame.Name = "ActionFrame"
-    ActionFrame.Size = UDim2.new(0.95, 0, 0, 40)
-    ActionFrame.BackgroundTransparency = 1
+    ActionFrame.Size = UDim2.new(0.95, 0, 0, 60)
+    ActionFrame.BackgroundColor3 = theme.ContentCard
+    ActionFrame.BackgroundTransparency = 0
+    ActionFrame.BorderSizePixel = 2
+    ActionFrame.BorderColor3 = theme.BorderLight
     ActionFrame.LayoutOrder = #Tab.Elements + 1
     ActionFrame.Parent = Tab.Content
+    
+    local ActionCorner = Instance.new("UICorner")
+    ActionCorner.CornerRadius = UDim.new(0, 8)
+    ActionCorner.Parent = ActionFrame
+    
+    local ActionInner = Instance.new("Frame")
+    ActionInner.Name = "ActionInner"
+    ActionInner.Size = UDim2.new(1, -4, 1, -4)
+    ActionInner.Position = UDim2.new(0, 2, 0, 2)
+    ActionInner.BackgroundColor3 = theme.ContentCard
+    ActionInner.BackgroundTransparency = 0
+    ActionInner.BorderSizePixel = 0
+    ActionInner.Parent = ActionFrame
+    
+    local ActionInnerCorner = Instance.new("UICorner")
+    ActionInnerCorner.CornerRadius = UDim.new(0, 6)
+    ActionInnerCorner.Parent = ActionInner
     
     local ActionLayout = Instance.new("UIListLayout")
     ActionLayout.FillDirection = Enum.FillDirection.Horizontal
     ActionLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     ActionLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    ActionLayout.Padding = UDim.new(0, 10)
-    ActionLayout.Parent = ActionFrame
+    ActionLayout.Padding = UDim.new(0, 15)
+    ActionLayout.Parent = ActionInner
     
     -- Tombol Beli Sekarang
     local BuyNowBtn = Instance.new("TextButton")
     BuyNowBtn.Name = "BuyNowBtn"
-    BuyNowBtn.Size = UDim2.new(0, 120, 0, 36)
-    BuyNowBtn.Text = "🛒 BELI"
-    BuyNowBtn.TextColor3 = theme.Text  -- PUTIH
-    BuyNowBtn.BackgroundColor3 = theme.Accent  -- MERAH
+    BuyNowBtn.Size = UDim2.new(0, 130, 0, 40)
+    BuyNowBtn.Text = "🛒 BELI SEKARANG"
+    BuyNowBtn.TextColor3 = theme.Text
+    BuyNowBtn.BackgroundColor3 = theme.Accent
     BuyNowBtn.BackgroundTransparency = 0
     BuyNowBtn.TextSize = 14
     BuyNowBtn.Font = Enum.Font.GothamBold
     BuyNowBtn.AutoButtonColor = false
-    BuyNowBtn.Parent = ActionFrame
+    BuyNowBtn.Parent = ActionInner
     
     local BuyCorner = Instance.new("UICorner")
-    BuyCorner.CornerRadius = UDim.new(0, 6)
+    BuyCorner.CornerRadius = UDim.new(0, 8)
     BuyCorner.Parent = BuyNowBtn
     
     BuyNowBtn.MouseButton1Click:Connect(function()
-        buySeed(selectedSeed, buyQuantity)
+        buySeed(selectedSeed, buyQuantity, false)  -- false = manual
     end)
     
-    -- Toggle Auto Buy
+    -- Tombol Auto Buy Toggle
     local AutoToggleBtn = Instance.new("TextButton")
     AutoToggleBtn.Name = "AutoToggleBtn"
-    AutoToggleBtn.Size = UDim2.new(0, 120, 0, 36)
-    AutoToggleBtn.Text = "🤖 AUTO OFF"
-    AutoToggleBtn.TextColor3 = theme.Text  -- PUTIH
-    AutoToggleBtn.BackgroundColor3 = theme.ToggleOff  -- ABU-ABU
+    AutoToggleBtn.Size = UDim2.new(0, 130, 0, 40)
+    AutoToggleBtn.Text = "🤖 AUTO BUY OFF"
+    AutoToggleBtn.TextColor3 = theme.Text
+    AutoToggleBtn.BackgroundColor3 = theme.ToggleOff
     AutoToggleBtn.BackgroundTransparency = 0
     AutoToggleBtn.TextSize = 14
     AutoToggleBtn.Font = Enum.Font.GothamBold
     AutoToggleBtn.AutoButtonColor = false
-    AutoToggleBtn.Parent = ActionFrame
+    AutoToggleBtn.Parent = ActionInner
     
     local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 6)
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = AutoToggleBtn
     
-    -- Fungsi untuk update tampilan tombol auto
+    -- Fungsi update tombol auto
     local function updateAutoButton()
         if autoBuyEnabled then
-            AutoToggleBtn.Text = "🤖 AUTO ON"
-            AutoToggleBtn.BackgroundColor3 = theme.Accent  -- MERAH
+            AutoToggleBtn.Text = "🤖 AUTO BUY ON"
+            AutoToggleBtn.BackgroundColor3 = theme.Accent
         else
-            AutoToggleBtn.Text = "🤖 AUTO OFF"
-            AutoToggleBtn.BackgroundColor3 = theme.ToggleOff  -- ABU-ABU
+            AutoToggleBtn.Text = "🤖 AUTO BUY OFF"
+            AutoToggleBtn.BackgroundColor3 = theme.ToggleOff
         end
     end
     
@@ -440,21 +502,21 @@ function ShopAutoBuy.Init(Dependencies)
         updateAutoButton()
     end)
     
-    -- Tombol Stop (X)
+    -- Tombol Stop
     local StopBtn = Instance.new("TextButton")
     StopBtn.Name = "StopBtn"
-    StopBtn.Size = UDim2.new(0, 40, 0, 36)
+    StopBtn.Size = UDim2.new(0, 50, 0, 40)
     StopBtn.Text = "✕"
-    StopBtn.TextColor3 = theme.Error or Color3.fromRGB(255, 70, 70)  -- MERAH ERROR
-    StopBtn.BackgroundColor3 = theme.Button  -- HITAM
+    StopBtn.TextColor3 = theme.Error or Color3.fromRGB(255, 70, 70)
+    StopBtn.BackgroundColor3 = theme.Button
     StopBtn.BackgroundTransparency = 0
-    StopBtn.TextSize = 16
+    StopBtn.TextSize = 18
     StopBtn.Font = Enum.Font.GothamBold
     StopBtn.AutoButtonColor = false
-    StopBtn.Parent = ActionFrame
+    StopBtn.Parent = ActionInner
     
     local StopCorner = Instance.new("UICorner")
-    StopCorner.CornerRadius = UDim.new(0, 6)
+    StopCorner.CornerRadius = UDim.new(0, 8)
     StopCorner.Parent = StopBtn
     
     StopBtn.MouseButton1Click:Connect(function()
@@ -464,7 +526,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
-    -- Hover effects dengan TWEEN
+    -- Hover effects
     local function setupHover(btn, normalColor, hoverColor)
         btn.MouseEnter:Connect(function()
             tween(btn, {BackgroundColor3 = hoverColor}, 0.15)
@@ -474,15 +536,15 @@ function ShopAutoBuy.Init(Dependencies)
         end)
     end
     
-    setupHover(BuyNowBtn, theme.Accent, theme.AccentLight or Color3.fromRGB(255, 60, 60))
+    setupHover(BuyNowBtn, theme.Accent, Color3.fromRGB(255, 60, 60))
     setupHover(StopBtn, theme.Button, theme.ButtonHover)
     
-    -- Hover untuk AutoToggleBtn (efek khusus)
+    -- Hover khusus untuk auto toggle
     AutoToggleBtn.MouseEnter:Connect(function()
         if not autoBuyEnabled then
             tween(AutoToggleBtn, {BackgroundColor3 = theme.ButtonHover}, 0.15)
         else
-            tween(AutoToggleBtn, {BackgroundColor3 = theme.AccentLight or Color3.fromRGB(255, 60, 60)}, 0.15)
+            tween(AutoToggleBtn, {BackgroundColor3 = Color3.fromRGB(255, 60, 60)}, 0.15)
         end
     end)
     
@@ -493,6 +555,14 @@ function ShopAutoBuy.Init(Dependencies)
             tween(AutoToggleBtn, {BackgroundColor3 = theme.Accent}, 0.15)
         end
     end)
+    
+    -- 9. FOOTER
+    Tab:CreateLabel({
+        Name = "Footer",
+        Text = "─────────────────────",
+        Color = theme.TextMuted or Color3.fromRGB(140, 140, 150),
+        Alignment = Enum.TextXAlignment.Center
+    })
     
     -- ===== CLEANUP FUNCTION =====
     local function cleanup()
@@ -507,7 +577,7 @@ function ShopAutoBuy.Init(Dependencies)
     Shared.Modules = Shared.Modules or {}
     Shared.Modules.ShopAutoBuy = {
         BuySeed = function(seedName, amount)
-            return buySeed(seedName, amount or 1)
+            return buySeed(seedName, amount or 1, false)
         end,
         GetStatus = function()
             return {
@@ -536,20 +606,24 @@ function ShopAutoBuy.Init(Dependencies)
             end
         end,
         SetQuantity = function(value)
-            if value >= 1 and value <= 10 then
-                buyQuantity = value
-                QtyBox.Text = tostring(value)
+            if value and value >= 1 and value <= 99 then
+                buyQuantity = math.floor(value)
+                QtyBox.Text = tostring(buyQuantity)
             end
         end,
         SetDelay = function(value)
-            if value >= 0.5 and value <= 5 then
+            if value and value >= 0.5 and value <= 5 then
                 buyDelay = value
                 DelayBox.Text = tostring(value) .. "s"
+                if autoBuyEnabled then
+                    stopAutoBuy()
+                    startAutoBuy()
+                end
             end
         end
     }
     
-    print("✅ Shop module loaded - Bee Futuristic Edition")
+    print("✅ Shop module loaded - Bee Futuristic Edition dengan Dropdown Samping")
     
     return cleanup
 end
