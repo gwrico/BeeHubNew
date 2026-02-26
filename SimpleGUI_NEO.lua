@@ -272,7 +272,7 @@ function SimpleGUI:CreateWindow(options)
     TitleIcon.BackgroundColor3 = theme.Accent
     TitleIcon.BackgroundTransparency = 0
     TitleIcon.TextSize = 22 * scale
-    TitleIcon.Font = Enum.Font.GothamBlack
+    TitleIcon.Font = Enum.Font.GothamBlackBlack
     TitleIcon.Parent = TitleContainer
     
     -- Efek glow pada icon
@@ -310,7 +310,7 @@ function SimpleGUI:CreateWindow(options)
     TitleLabel.TextColor3 = theme.Text
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.TextSize = 16 * scale
-    TitleLabel.Font = Enum.Font.GothamBlack
+    TitleLabel.Font = Enum.Font.GothamBlackBlack
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TitleTextFrame
     
@@ -323,7 +323,7 @@ function SimpleGUI:CreateWindow(options)
     SubTitleLabel.TextColor3 = theme.Accent  -- Merah untuk sub title
     SubTitleLabel.BackgroundTransparency = 1
     SubTitleLabel.TextSize = 11 * scale
-    SubTitleLabel.Font = Enum.Font.Gotham
+    SubTitleLabel.Font = Enum.Font.GothamBlack
     SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     SubTitleLabel.Parent = TitleTextFrame
     
@@ -341,7 +341,7 @@ function SimpleGUI:CreateWindow(options)
     MinimizeButton.BackgroundColor3 = theme.Button
     MinimizeButton.BackgroundTransparency = 0
     MinimizeButton.TextSize = 20 * scale
-    MinimizeButton.Font = Enum.Font.Gotham
+    MinimizeButton.Font = Enum.Font.GothamBlack
     MinimizeButton.Parent = TitleBar
     
     local MinimizeButtonCorner = Instance.new("UICorner")
@@ -358,7 +358,7 @@ function SimpleGUI:CreateWindow(options)
     CloseButton.BackgroundColor3 = theme.Button
     CloseButton.BackgroundTransparency = 0
     CloseButton.TextSize = 18 * scale
-    CloseButton.Font = Enum.Font.Gotham
+    CloseButton.Font = Enum.Font.GothamBlack
     CloseButton.Parent = TitleBar
     
     local CloseButtonCorner = Instance.new("UICorner")
@@ -417,7 +417,7 @@ function SimpleGUI:CreateWindow(options)
     HeaderLabel.TextColor3 = theme.Accent  -- Merah untuk MENU
     HeaderLabel.BackgroundTransparency = 1
     HeaderLabel.TextSize = 14 * scale
-    HeaderLabel.Font = Enum.Font.GothamBlack
+    HeaderLabel.Font = Enum.Font.GothamBlackBlack
     HeaderLabel.TextXAlignment = Enum.TextXAlignment.Left
     HeaderLabel.Parent = SidebarHeader
     
@@ -507,7 +507,7 @@ function SimpleGUI:CreateWindow(options)
         HeaderTitle.TextColor3 = theme.Accent  -- Merah untuk section header
         HeaderTitle.BackgroundTransparency = 1
         HeaderTitle.TextSize = 15 * scale
-        HeaderTitle.Font = Enum.Font.GothamBlack
+        HeaderTitle.Font = Enum.Font.GothamBlackBlack
         HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
         HeaderTitle.Parent = HeaderFrame
         
@@ -602,7 +602,7 @@ function SimpleGUI:CreateWindow(options)
         TabButton.BackgroundColor3 = theme.TabNormal
         TabButton.BackgroundTransparency = 0
         TabButton.TextSize = 13 * scale
-        TabButton.Font = Enum.Font.Gotham
+        TabButton.Font = Enum.Font.GothamBlack
         TabButton.TextXAlignment = Enum.TextXAlignment.Left
         TabButton.AutoButtonColor = false
         TabButton.LayoutOrder = #self.Tabs + 1
@@ -698,7 +698,7 @@ function SimpleGUI:CreateWindow(options)
                 Button.BackgroundColor3 = theme.Button
                 Button.BackgroundTransparency = 0
                 Button.TextSize = 13 * scale
-                Button.Font = Enum.Font.Gotham
+                Button.Font = Enum.Font.GothamBlack
                 Button.AutoButtonColor = false
                 Button.LayoutOrder = #self.Elements + 1
                 Button.Parent = TabContent
@@ -755,7 +755,7 @@ function SimpleGUI:CreateWindow(options)
                 Label.TextColor3 = opts.Color or theme.TextSecondary
                 Label.BackgroundTransparency = 1
                 Label.TextSize = opts.Size or 13 * scale
-                Label.Font = opts.Bold and Enum.Font.GothamBlack or Enum.Font.Gotham
+                Label.Font = opts.Bold and Enum.Font.GothamBlackBlack or Enum.Font.GothamBlack
                 Label.TextXAlignment = opts.Alignment or Enum.TextXAlignment.Left
                 Label.LayoutOrder = #self.Elements + 1
                 Label.Parent = TabContent
@@ -813,7 +813,7 @@ function SimpleGUI:CreateWindow(options)
                 ToggleLabel.TextColor3 = theme.Text
                 ToggleLabel.BackgroundTransparency = 1
                 ToggleLabel.TextSize = 14 * scale
-                ToggleLabel.Font = Enum.Font.Gotham
+                ToggleLabel.Font = Enum.Font.GothamBlack
                 ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
                 ToggleLabel.Parent = InnerFrame  -- Parent ke InnerFrame
                 
@@ -956,7 +956,7 @@ function SimpleGUI:CreateWindow(options)
                 SliderLabel.TextColor3 = theme.Text
                 SliderLabel.BackgroundTransparency = 1
                 SliderLabel.TextSize = 14 * scale
-                SliderLabel.Font = Enum.Font.Gotham
+                SliderLabel.Font = Enum.Font.GothamBlack
                 SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
                 SliderLabel.Parent = InnerFrame
                 
@@ -969,7 +969,7 @@ function SimpleGUI:CreateWindow(options)
                 ValueLabel.TextColor3 = theme.Accent
                 ValueLabel.BackgroundTransparency = 1
                 ValueLabel.TextSize = 14 * scale
-                ValueLabel.Font = Enum.Font.GothamBlack
+                ValueLabel.Font = Enum.Font.GothamBlackBlack
                 ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
                 ValueLabel.Parent = InnerFrame
                 
@@ -1139,7 +1139,7 @@ function SimpleGUI:CreateWindow(options)
                 DropdownLabel.TextColor3 = theme.Text
                 DropdownLabel.BackgroundTransparency = 1
                 DropdownLabel.TextSize = 14 * scale
-                DropdownLabel.Font = Enum.Font.Gotham
+                DropdownLabel.Font = Enum.Font.GothamBlack
                 DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
                 DropdownLabel.Parent = InnerFrame
                 
@@ -1153,7 +1153,7 @@ function SimpleGUI:CreateWindow(options)
                 DropdownButton.BackgroundColor3 = theme.InputBg
                 DropdownButton.BackgroundTransparency = 0
                 DropdownButton.TextSize = 13 * scale
-                DropdownButton.Font = Enum.Font.Gotham
+                DropdownButton.Font = Enum.Font.GothamBlack
                 DropdownButton.AutoButtonColor = false
                 DropdownButton.Parent = InnerFrame
                 
@@ -1170,7 +1170,7 @@ function SimpleGUI:CreateWindow(options)
                 ArrowLabel.TextColor3 = theme.Accent
                 ArrowLabel.BackgroundTransparency = 1
                 ArrowLabel.TextSize = 12 * scale
-                ArrowLabel.Font = Enum.Font.Gotham
+                ArrowLabel.Font = Enum.Font.GothamBlack
                 ArrowLabel.Parent = DropdownButton
                 
                 -- Dropdown container
@@ -1260,7 +1260,7 @@ function SimpleGUI:CreateWindow(options)
                         EmptyLabel.TextColor3 = theme.TextMuted
                         EmptyLabel.BackgroundTransparency = 1
                         EmptyLabel.TextSize = 12 * scale
-                        EmptyLabel.Font = Enum.Font.Gotham
+                        EmptyLabel.Font = Enum.Font.GothamBlack
                         EmptyLabel.Parent = DropdownList
                         return
                     end
@@ -1274,7 +1274,7 @@ function SimpleGUI:CreateWindow(options)
                         ItemButton.BackgroundColor3 = theme.InputBg
                         ItemButton.BackgroundTransparency = 0
                         ItemButton.TextSize = 12 * scale
-                        ItemButton.Font = Enum.Font.Gotham
+                        ItemButton.Font = Enum.Font.GothamBlack
                         ItemButton.AutoButtonColor = false
                         ItemButton.LayoutOrder = i
                         ItemButton.Parent = DropdownList
@@ -1490,7 +1490,7 @@ function SimpleGUI:CreateWindow(options)
     MinimizedIcon.TextColor3 = theme.Accent  -- WARNA MERAH
     MinimizedIcon.BackgroundTransparency = 1  -- BACKGROUND TRANSPARAN
     MinimizedIcon.TextSize = 32 * scale  -- LEBIH BESAR
-    MinimizedIcon.Font = Enum.Font.GothamBlack
+    MinimizedIcon.Font = Enum.Font.GothamBlackBlack
     MinimizedIcon.Visible = false
     MinimizedIcon.Parent = self.ScreenGui
     
