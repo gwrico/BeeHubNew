@@ -13,7 +13,6 @@ function ShopAutoBuy.Init(Dependencies)
     -- Ambil theme dari GUI
     local theme = GUI:GetTheme() or {
         Accent = Color3.fromRGB(255, 40, 40),
-        AccentLight = Color3.fromRGB(255, 60, 60),
         Text = Color3.fromRGB(255, 255, 255),
         TextSecondary = Color3.fromRGB(200, 200, 210),
         Button = Color3.fromRGB(25, 25, 32),
@@ -21,7 +20,6 @@ function ShopAutoBuy.Init(Dependencies)
         InputBg = Color3.fromRGB(30, 30, 40),
         ToggleOff = Color3.fromRGB(50, 50, 60),
         BorderLight = Color3.fromRGB(70, 70, 80),
-        BorderRed = Color3.fromRGB(255, 40, 40),
         ContentCard = Color3.fromRGB(20, 20, 25),
         TextMuted = Color3.fromRGB(140, 140, 150)
     }
@@ -176,12 +174,12 @@ function ShopAutoBuy.Init(Dependencies)
         })
     end
     
-    -- ===== MEMBUAT UI =====
+    -- ===== MEMBUAT UI (RAPI SEPERTI MISC) =====
     
-    -- 1. DROPDOWN (tinggi 40 aja biar pass)
+    -- 1. DROPDOWN (tetap pakai CreateDropdown bawaan)
     dropdownRef = Tab:CreateDropdown({
         Name = "SeedDropdown",
-        Text = "Pilih Bibit:",
+        Text = "🌱 Pilih Bibit",
         Options = seedDisplayOptions,
         Default = seedDisplayOptions[1],
         Callback = function(value)
@@ -201,241 +199,57 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 2. FRAME UNTUK JUMLAH BIBIT (TINGGI 40)
-    local QuantityFrame = Instance.new("Frame")
-    QuantityFrame.Name = "QuantityFrame"
-    QuantityFrame.Size = UDim2.new(0.95, 0, 0, 40)
-    QuantityFrame.BackgroundColor3 = theme.ContentCard
-    QuantityFrame.BackgroundTransparency = 0
-    QuantityFrame.BorderSizePixel = 2
-    QuantityFrame.BorderColor3 = theme.BorderLight
-    QuantityFrame.LayoutOrder = #Tab.Elements + 1
-    QuantityFrame.Parent = Tab.Content
+    -- 2. JUMLAH BIBIT (menggunakan slider agar rapi)
+    Tab:CreateLabel({
+        Name = "QtyLabel",
+        Text = "   🔢 Jumlah Bibit:",
+        Color = theme.TextSecondary,
+        Alignment = Enum.TextXAlignment.Left
+    })
     
-    local QuantityCorner = Instance.new("UICorner")
-    QuantityCorner.CornerRadius = UDim.new(0, 6)
-    QuantityCorner.Parent = QuantityFrame
-    
-    local QuantityInner = Instance.new("Frame")
-    QuantityInner.Name = "QuantityInner"
-    QuantityInner.Size = UDim2.new(1, -4, 1, -4)
-    QuantityInner.Position = UDim2.new(0, 2, 0, 2)
-    QuantityInner.BackgroundColor3 = theme.ContentCard
-    QuantityInner.BackgroundTransparency = 0
-    QuantityInner.BorderSizePixel = 0
-    QuantityInner.Parent = QuantityFrame
-    
-    local QuantityInnerCorner = Instance.new("UICorner")
-    QuantityInnerCorner.CornerRadius = UDim.new(0, 4)
-    QuantityInnerCorner.Parent = QuantityInner
-    
-    -- Layout horizontal
-    local QuantityLayout = Instance.new("UIListLayout")
-    QuantityLayout.FillDirection = Enum.FillDirection.Horizontal
-    QuantityLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    QuantityLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    QuantityLayout.Padding = UDim.new(0, 10)
-    QuantityLayout.Parent = QuantityInner
-    
-    -- Label "Jumlah Bibit:" di KIRI
-    local QtyLabelText = Instance.new("TextLabel")
-    QtyLabelText.Name = "QtyLabelText"
-    QtyLabelText.Size = UDim2.new(0, 100, 0, 30)
-    QtyLabelText.Text = "Jumlah Bibit:"
-    QtyLabelText.TextColor3 = theme.Text
-    QtyLabelText.BackgroundTransparency = 1
-    QtyLabelText.TextSize = 14
-    QtyLabelText.Font = Enum.Font.GothamBold
-    QtyLabelText.TextXAlignment = Enum.TextXAlignment.Left
-    QtyLabelText.Parent = QuantityInner
-    
-    -- QUANTITY CONTROL
-    local QtyFrame = Instance.new("Frame")
-    QtyFrame.Name = "QtyFrame"
-    QtyFrame.Size = UDim2.new(0, 120, 0, 32)
-    QtyFrame.BackgroundColor3 = theme.InputBg
-    QtyFrame.BackgroundTransparency = 0
-    QtyFrame.Parent = QuantityInner
-    
-    local QtyCorner = Instance.new("UICorner")
-    QtyCorner.CornerRadius = UDim.new(0, 5)
-    QtyCorner.Parent = QtyFrame
-    
-    local QtyIcon = Instance.new("TextLabel")
-    QtyIcon.Name = "QtyIcon"
-    QtyIcon.Size = UDim2.new(0, 32, 1, 0)
-    QtyIcon.Text = "🔢"
-    QtyIcon.TextColor3 = theme.Accent
-    QtyIcon.BackgroundTransparency = 1
-    QtyIcon.TextSize = 16
-    QtyIcon.Font = Enum.Font.GothamBold
-    QtyIcon.Parent = QtyFrame
-    
-    local QtyBox = Instance.new("TextBox")
-    QtyBox.Name = "QtyBox"
-    QtyBox.Size = UDim2.new(1, -32, 1, 0)
-    QtyBox.Position = UDim2.new(0, 32, 0, 0)
-    QtyBox.Text = tostring(buyQuantity)
-    QtyBox.TextColor3 = theme.Text
-    QtyBox.BackgroundTransparency = 1
-    QtyBox.TextSize = 14
-    QtyBox.Font = Enum.Font.Gotham
-    QtyBox.ClearTextOnFocus = false
-    QtyBox.Parent = QtyFrame
-    
-    -- 3. FRAME UNTUK DELAY (TINGGI 40)
-    local DelayFrame2 = Instance.new("Frame")
-    DelayFrame2.Name = "DelayFrame2"
-    DelayFrame2.Size = UDim2.new(0.95, 0, 0, 40)
-    DelayFrame2.BackgroundColor3 = theme.ContentCard
-    DelayFrame2.BackgroundTransparency = 0
-    DelayFrame2.BorderSizePixel = 2
-    DelayFrame2.BorderColor3 = theme.BorderLight
-    DelayFrame2.LayoutOrder = #Tab.Elements + 1
-    DelayFrame2.Parent = Tab.Content
-    
-    local DelayCorner2 = Instance.new("UICorner")
-    DelayCorner2.CornerRadius = UDim.new(0, 6)
-    DelayCorner2.Parent = DelayFrame2
-    
-    local DelayInner2 = Instance.new("Frame")
-    DelayInner2.Name = "DelayInner2"
-    DelayInner2.Size = UDim2.new(1, -4, 1, -4)
-    DelayInner2.Position = UDim2.new(0, 2, 0, 2)
-    DelayInner2.BackgroundColor3 = theme.ContentCard
-    DelayInner2.BackgroundTransparency = 0
-    DelayInner2.BorderSizePixel = 0
-    DelayInner2.Parent = DelayFrame2
-    
-    local DelayInnerCorner2 = Instance.new("UICorner")
-    DelayInnerCorner2.CornerRadius = UDim.new(0, 4)
-    DelayInnerCorner2.Parent = DelayInner2
-    
-    local DelayLayout2 = Instance.new("UIListLayout")
-    DelayLayout2.FillDirection = Enum.FillDirection.Horizontal
-    DelayLayout2.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    DelayLayout2.VerticalAlignment = Enum.VerticalAlignment.Center
-    DelayLayout2.Padding = UDim.new(0, 10)
-    DelayLayout2.Parent = DelayInner2
-    
-    -- Label "Delay (detik):" di KIRI
-    local DelayLabelText = Instance.new("TextLabel")
-    DelayLabelText.Name = "DelayLabelText"
-    DelayLabelText.Size = UDim2.new(0, 100, 0, 30)
-    DelayLabelText.Text = "Delay (detik):"
-    DelayLabelText.TextColor3 = theme.Text
-    DelayLabelText.BackgroundTransparency = 1
-    DelayLabelText.TextSize = 14
-    DelayLabelText.Font = Enum.Font.GothamBold
-    DelayLabelText.TextXAlignment = Enum.TextXAlignment.Left
-    DelayLabelText.Parent = DelayInner2
-    
-    -- DELAY CONTROL
-    local DelayFrame = Instance.new("Frame")
-    DelayFrame.Name = "DelayFrame"
-    DelayFrame.Size = UDim2.new(0, 120, 0, 32)
-    DelayFrame.BackgroundColor3 = theme.InputBg
-    DelayFrame.BackgroundTransparency = 0
-    DelayFrame.Parent = DelayInner2
-    
-    local DelayCorner = Instance.new("UICorner")
-    DelayCorner.CornerRadius = UDim.new(0, 5)
-    DelayCorner.Parent = DelayFrame
-    
-    local DelayIcon = Instance.new("TextLabel")
-    DelayIcon.Name = "DelayIcon"
-    DelayIcon.Size = UDim2.new(0, 32, 1, 0)
-    DelayIcon.Text = "⏱️"
-    DelayIcon.TextColor3 = theme.Accent
-    DelayIcon.BackgroundTransparency = 1
-    DelayIcon.TextSize = 16
-    DelayIcon.Font = Enum.Font.GothamBold
-    DelayIcon.Parent = DelayFrame
-    
-    local DelayBox = Instance.new("TextBox")
-    DelayBox.Name = "DelayBox"
-    DelayBox.Size = UDim2.new(1, -32, 1, 0)
-    DelayBox.Position = UDim2.new(0, 32, 0, 0)
-    DelayBox.Text = tostring(buyDelay) .. "s"
-    DelayBox.TextColor3 = theme.Text
-    DelayBox.BackgroundTransparency = 1
-    DelayBox.TextSize = 14
-    DelayBox.Font = Enum.Font.Gotham
-    DelayBox.ClearTextOnFocus = false
-    DelayBox.Parent = DelayFrame
-    
-    -- Validasi
-    QtyBox.FocusLost:Connect(function()
-        local value = tonumber(QtyBox.Text)
-        if value and value >= 1 and value <= 99 then
-            buyQuantity = math.floor(value)
-            QtyBox.Text = tostring(buyQuantity)
-        else
-            QtyBox.Text = tostring(buyQuantity)
-            Bdev:Notify({
-                Title = "❌ Invalid",
-                Content = "Jumlah harus 1-99",
-                Duration = 2
-            })
+    -- Slider untuk quantity
+    Tab:CreateSlider({
+        Name = "QuantitySlider",
+        Range = {1, 99},
+        CurrentValue = buyQuantity,
+        Increment = 1,
+        Callback = function(value)
+            buyQuantity = value
         end
-    end)
+    })
     
-    DelayBox.FocusLost:Connect(function()
-        local text = DelayBox.Text:gsub("s", "")
-        local value = tonumber(text)
-        if value and value >= 0.5 and value <= 5 then
+    -- 3. DELAY (menggunakan slider agar rapi)
+    Tab:CreateLabel({
+        Name = "DelayLabel",
+        Text = "   ⏱️ Delay (detik):",
+        Color = theme.TextSecondary,
+        Alignment = Enum.TextXAlignment.Left
+    })
+    
+    -- Slider untuk delay
+    Tab:CreateSlider({
+        Name = "DelaySlider",
+        Range = {0.5, 5},
+        CurrentValue = buyDelay,
+        Increment = 0.5,
+        Callback = function(value)
             buyDelay = value
-            DelayBox.Text = tostring(buyDelay) .. "s"
             if autoBuyEnabled then
                 stopAutoBuy()
                 startAutoBuy()
             end
-        else
-            DelayBox.Text = tostring(buyDelay) .. "s"
-            Bdev:Notify({
-                Title = "❌ Invalid",
-                Content = "Delay harus 0.5-5 detik",
-                Duration = 2
-            })
         end
-    end)
+    })
     
-    -- 4. FRAME BELI SEKARANG (TINGGI 40)
-    local BuyFrame = Instance.new("Frame")
-    BuyFrame.Name = "BuyFrame"
-    BuyFrame.Size = UDim2.new(0.95, 0, 0, 40)
-    BuyFrame.BackgroundColor3 = theme.ContentCard
-    BuyFrame.BackgroundTransparency = 0
-    BuyFrame.BorderSizePixel = 2
-    BuyFrame.BorderColor3 = theme.BorderLight
-    BuyFrame.LayoutOrder = #Tab.Elements + 1
-    BuyFrame.Parent = Tab.Content
-    
-    local BuyCorner = Instance.new("UICorner")
-    BuyCorner.CornerRadius = UDim.new(0, 6)
-    BuyCorner.Parent = BuyFrame
-    
-    local BuyInner = Instance.new("Frame")
-    BuyInner.Name = "BuyInner"
-    BuyInner.Size = UDim2.new(1, -4, 1, -4)
-    BuyInner.Position = UDim2.new(0, 2, 0, 2)
-    BuyInner.BackgroundColor3 = theme.ContentCard
-    BuyInner.BackgroundTransparency = 0
-    BuyInner.BorderSizePixel = 0
-    BuyInner.Parent = BuyFrame
-    
-    local BuyInnerCorner = Instance.new("UICorner")
-    BuyInnerCorner.CornerRadius = UDim.new(0, 4)
-    BuyInnerCorner.Parent = BuyInner
-    
-    -- Toggle Beli Sekarang
+    -- 4. BELI SEKARANG (sebagai toggle, seperti di Misc)
     buyToggleRef = Tab:CreateToggle({
         Name = "BuyNowToggle",
-        Text = "Beli Sekarang",
+        Text = "🛒 Beli Sekarang",
         CurrentValue = false,
         Callback = function(state)
             if state then
                 buySeed(selectedSeed, buyQuantity, false)
+                -- Kembalikan ke false setelah beli
                 task.wait(0.1)
                 if buyToggleRef and buyToggleRef.SetValue then
                     buyToggleRef:SetValue(false)
@@ -444,43 +258,10 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    if buyToggleRef and buyToggleRef.Frame then
-        buyToggleRef.Frame.Parent = BuyInner
-        buyToggleRef.Frame.Size = UDim2.new(1, -10, 0, 32)
-    end
-    
-    -- 5. FRAME AUTO BUY (TINGGI 40)
-    local AutoFrame = Instance.new("Frame")
-    AutoFrame.Name = "AutoFrame"
-    AutoFrame.Size = UDim2.new(0.95, 0, 0, 40)
-    AutoFrame.BackgroundColor3 = theme.ContentCard
-    AutoFrame.BackgroundTransparency = 0
-    AutoFrame.BorderSizePixel = 2
-    AutoFrame.BorderColor3 = theme.BorderLight
-    AutoFrame.LayoutOrder = #Tab.Elements + 1
-    AutoFrame.Parent = Tab.Content
-    
-    local AutoCorner = Instance.new("UICorner")
-    AutoCorner.CornerRadius = UDim.new(0, 6)
-    AutoCorner.Parent = AutoFrame
-    
-    local AutoInner = Instance.new("Frame")
-    AutoInner.Name = "AutoInner"
-    AutoInner.Size = UDim2.new(1, -4, 1, -4)
-    AutoInner.Position = UDim2.new(0, 2, 0, 2)
-    AutoInner.BackgroundColor3 = theme.ContentCard
-    AutoInner.BackgroundTransparency = 0
-    AutoInner.BorderSizePixel = 0
-    AutoInner.Parent = AutoFrame
-    
-    local AutoInnerCorner = Instance.new("UICorner")
-    AutoInnerCorner.CornerRadius = UDim.new(0, 4)
-    AutoInnerCorner.Parent = AutoInner
-    
-    -- Toggle Auto Buy
+    -- 5. AUTO BUY (toggle, seperti di Misc)
     autoToggleRef = Tab:CreateToggle({
         Name = "AutoBuyToggle",
-        Text = "Auto Buy",
+        Text = "🤖 Auto Buy",
         CurrentValue = autoBuyEnabled,
         Callback = function(state)
             if state then
@@ -496,11 +277,6 @@ function ShopAutoBuy.Init(Dependencies)
             end
         end
     })
-    
-    if autoToggleRef and autoToggleRef.Frame then
-        autoToggleRef.Frame.Parent = AutoInner
-        autoToggleRef.Frame.Size = UDim2.new(1, -10, 0, 32)
-    end
     
     -- 6. FOOTER
     Tab:CreateLabel({
@@ -554,14 +330,12 @@ function ShopAutoBuy.Init(Dependencies)
         end,
         SetQuantity = function(value)
             if value and value >= 1 and value <= 99 then
-                buyQuantity = math.floor(value)
-                QtyBox.Text = tostring(buyQuantity)
+                buyQuantity = value
             end
         end,
         SetDelay = function(value)
             if value and value >= 0.5 and value <= 5 then
                 buyDelay = value
-                DelayBox.Text = tostring(value) .. "s"
                 if autoBuyEnabled then
                     stopAutoBuy()
                     startAutoBuy()
@@ -570,7 +344,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     }
     
-    print("✅ Shop module loaded - Bee Futuristic Edition")
+    print("✅ Shop module loaded - Rapi seperti Misc")
     
     return cleanup
 end
