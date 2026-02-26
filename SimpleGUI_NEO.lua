@@ -1380,50 +1380,30 @@ function SimpleGUI:CreateWindow(options)
         return tabObj
     end
     
-    -- ===== MINIMIZE FUNCTIONALITY =====
+    -- ===== MINIMIZE FUNCTIONALITY (DIPERBAIKI) =====
     local originalSize = windowData.Size
     local isMinimized = false
     
-    -- Minimized icon dengan efek futuristik
+    -- Minimized icon dengan huruf B TANPA BACKGROUND
     local MinimizedIcon = Instance.new("TextButton")
     MinimizedIcon.Name = "MinimizedIcon_Bee"
     MinimizedIcon.Size = UDim2.new(0, 48 * scale, 0, 48 * scale)
     MinimizedIcon.Position = UDim2.new(0, 20, 0, 20)
-    MinimizedIcon.Text = "N"
-    MinimizedIcon.TextColor3 = Color3.new(1, 1, 1)
-    MinimizedIcon.BackgroundColor3 = theme.Accent  -- Merah
-    MinimizedIcon.BackgroundTransparency = 0
-    MinimizedIcon.TextSize = 24 * scale
+    MinimizedIcon.Text = "B"  -- ← UBAH KE "B"
+    MinimizedIcon.TextColor3 = theme.Accent  -- ← WARNA MERAH
+    MinimizedIcon.BackgroundTransparency = 1  -- ← BACKGROUND TRANSPARAN
+    MinimizedIcon.TextSize = 32 * scale  -- ← LEBIH BESAR
     MinimizedIcon.Font = Enum.Font.GothamBlack
     MinimizedIcon.Visible = false
     MinimizedIcon.Parent = self.ScreenGui
     
-    -- Glow untuk icon
-    local IconGlow = createGlow(MinimizedIcon, theme.AccentGlow, UDim2.new(1, 15, 1, 15))
-    IconGlow.ImageTransparency = 0.5
-    
-    local IconShadow = Instance.new("ImageLabel")
-    IconShadow.Name = "IconShadow"
-    IconShadow.Size = UDim2.new(1, 10, 1, 10)
-    IconShadow.Position = UDim2.new(0, -5, 0, -5)
-    IconShadow.BackgroundTransparency = 1
-    IconShadow.Image = "rbxassetid://13110549987"
-    IconShadow.ImageColor3 = Color3.new(0, 0, 0)
-    IconShadow.ImageTransparency = 0.8
-    IconShadow.ScaleType = Enum.ScaleType.Slice
-    IconShadow.SliceCenter = Rect.new(10, 10, 10, 10)
-    IconShadow.ZIndex = -1
-    IconShadow.Parent = MinimizedIcon
-    
-    local IconCorner = Instance.new("UICorner")
-    IconCorner.CornerRadius = UDim.new(0, 10 * scale)
-    IconCorner.Parent = MinimizedIcon
+    -- HAPUS SEMUA EFEK TAMBAHAN (glow, shadow, corner)
+    -- Biarkan icon hanya berupa teks merah tanpa background
     
     self.MinimizedIcons[windowData.Name] = {
         Icon = MinimizedIcon,
         UpdateTheme = function(self, newTheme)
-            MinimizedIcon.BackgroundColor3 = newTheme.Accent
-            IconGlow.ImageColor3 = newTheme.AccentGlow
+            MinimizedIcon.TextColor3 = newTheme.Accent  -- ← HANYA UPDATE WARNA TEXT
         end
     }
     
