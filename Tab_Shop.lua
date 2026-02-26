@@ -85,6 +85,8 @@ function ShopAutoBuy.Init(Dependencies)
     
     -- Variable untuk menyimpan references
     local dropdownRef = nil
+    local dropdownFrame = nil
+    local dropdownContainer = nil
     
     -- ===== FUNGSI CEK REMOTE =====
     local function checkRemote()
@@ -186,29 +188,272 @@ function ShopAutoBuy.Init(Dependencies)
         Alignment = Enum.TextXAlignment.Center
     })
     
-    -- 2. DROPDOWN (LABEL DI SAMPING KIRI, BUTTON DI KANAN)
-    dropdownRef = Tab:CreateDropdown({
-        Name = "SeedDropdown",
-        Text = "Pilih Bibit:",  -- Label akan di kiri
-        Options = seedDisplayOptions,
-        Default = seedDisplayOptions[1],
-        Callback = function(value)
-            selectedDisplay = value
-            selectedSeed = displayToName[value]
-            
-            Bdev:Notify({
-                Title = "Bibit Dipilih",
-                Content = value,
-                Duration = 1
-            })
-            
-            -- Jika auto buy sedang aktif, restart dengan bibit baru
-            if autoBuyEnabled then
-                stopAutoBuy()
-                startAutoBuy()
+    -- 2. DROPDOWN CUSTOM (UKURAN TETAP)
+    -- Frame utama dropdown
+    local DropdownMainFrame = Instance.new("Frame")
+    DropdownMainFrame.Name = "DropdownMainFrame"
+    DropdownMainFrame.Size = UDim2.new(0.95, 0, 0, 50)
+    DropdownMainFrame.BackgroundColor3 = theme.ContentCard
+    DropdownMainFrame.BackgroundTransparency = 0
+    DropdownMainFrame.BorderSizePixel = 2
+    DropdownMainFrame.BorderColor3 = theme.BorderLight
+    DropdownMainFrame.LayoutOrder = #Tab.Elements + 1
+    DropdownMainFrame.Parent = Tab.Content
+    
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 8)
+    MainCorner.Parent = DropdownMainFrame
+    
+    -- Inner frame
+    local MainInner = Instance.new("Frame")
+    MainInner.Name = "MainInner"
+    MainInner.Size = UDim2.new(1, -4, 1, -4)
+    MainInner.Position = UDim2.new(0, 2, 0, 2)
+    MainInner.BackgroundColor3 = theme.ContentCard
+    MainInner.BackgroundTransparency = 0
+    MainInner.BorderSizePixel = 0
+    MainInner.Parent = DropdownMainFrame
+    
+    local InnerCorner = Instance.new("UICorner")
+    InnerCorner.CornerRadius = UDim.new(0, 6)
+    InnerCorner.Parent = MainInner
+    
+    -- Layout horizontal untuk label dan dropdown
+    local DropdownLayout = Instance.new("UIListLayout")
+    DropdownLayout.FillDirection = Enum.FillDirection.Horizontal
+    DropdownLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    DropdownLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    DropdownLayout.Padding = UDim.new(0, 10)
+    DropdownLayout.Parent = MainInner
+    
+    -- Label Pilih Bibit
+    local DropdownLabel = Instance.new("TextLabel")
+    DropdownLabel.Name = "DropdownLabel"
+    DropdownLabel.Size = UDim2.new(0, 100, 0, 30)
+    DropdownLabel.Text = "Pilih Bibit:"
+    DropdownLabel.TextColor3 = theme.Text
+    DropdownLabel.BackgroundTransparency = 1
+    DropdownLabel.TextSize = 14
+    DropdownLabel.Font = Enum.Font.GothamBold
+    DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DropdownLabel.Parent = MainInner
+    
+    -- Dropdown Button (UKURAN TETAP)
+    local DropdownButton = Instance.new("TextButton")
+    DropdownButton.Name = "DropdownButton"
+    DropdownButton.Size = UDim2.new(0, 200, 0, 34)
+    DropdownButton.Text = selectedDisplay
+    DropdownButton.TextColor3 = theme.Text
+    DropdownButton.BackgroundColor3 = theme.InputBg
+    DropdownButton.BackgroundTransparency = 0
+    DropdownButton.TextSize = 14
+    DropdownButton.Font = Enum.Font.Gotham
+    DropdownButton.AutoButtonColor = false
+    DropdownButton.Parent = MainInner
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 6)
+    ButtonCorner.Parent = DropdownButton
+    
+    -- Arrow icon
+    local ArrowLabel = Instance.new("TextLabel")
+    ArrowLabel.Name = "ArrowLabel"
+    ArrowLabel.Size = UDim2.new(0, 30, 1, 0)
+    ArrowLabel.Position = UDim2.new(1, -30, 0, 0)
+    ArrowLabel.Text = "▼"
+    ArrowLabel.TextColor3 = theme.Accent
+    ArrowLabel.BackgroundTransparency = 1
+    ArrowLabel.TextSize = 14
+    ArrowLabel.Font = Enum.Font.Gotham
+    ArrowLabel.Parent = DropdownButton
+    
+    -- Dropdown Container (MUNCUL DI BAWAH, UKURAN TETAP)
+    local DropdownContainer = Instance.new("Frame")
+    DropdownContainer.Name = "DropdownContainer"
+    DropdownContainer.Size = UDim2.new(0, 200, 0, 0)
+    DropdownContainer.Position = UDim2.new(0, 112, 0, 40)  -- Posisi di bawah button
+    DropdownContainer.BackgroundColor3 = theme.InputBgFocus
+    DropdownContainer.BackgroundTransparency = 0
+    DropdownContainer.BorderSizePixel = 0
+    DropdownContainer.ClipsDescendants = true
+    DropdownContainer.Visible = false
+    DropdownContainer.ZIndex = 10
+    DropdownContainer.Parent = DropdownMainFrame
+    
+    local ContainerCorner = Instance.new("UICorner")
+    ContainerCorner.CornerRadius = UDim.new(0, 6)
+    ContainerCorner.Parent = DropdownContainer
+    
+    -- Dropdown List ScrollingFrame
+    local DropdownList = Instance.new("ScrollingFrame")
+    DropdownList.Name = "DropdownList"
+    DropdownList.Size = UDim2.new(1, -2, 1, -2)
+    DropdownList.Position = UDim2.new(0, 1, 0, 1)
+    DropdownList.BackgroundTransparency = 1
+    DropdownList.BorderSizePixel = 0
+    DropdownList.ScrollBarThickness = 4
+    DropdownList.ScrollBarImageColor3 = theme.Accent
+    DropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    DropdownList.ScrollingDirection = Enum.ScrollingDirection.Y
+    DropdownList.ElasticBehavior = Enum.ElasticBehavior.Always
+    DropdownList.ZIndex = 11
+    DropdownList.Parent = DropdownContainer
+    
+    -- Item layout
+    local ItemLayout = Instance.new("UIListLayout")
+    ItemLayout.Padding = UDim.new(0, 2)
+    ItemLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    ItemLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ItemLayout.Parent = DropdownList
+    
+    local ListPadding = Instance.new("UIPadding")
+    ListPadding.PaddingTop = UDim.new(0, 2)
+    ListPadding.PaddingBottom = UDim.new(0, 2)
+    ListPadding.Parent = DropdownList
+    
+    ItemLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        DropdownList.CanvasSize = UDim2.new(0, 0, 0, ItemLayout.AbsoluteContentSize.Y + 4)
+    end)
+    
+    -- Variables
+    local isOpen = false
+    local dropdownItems = {}
+    
+    -- Fungsi untuk membuat item dropdown
+    local function createDropdownItems()
+        for _, item in pairs(dropdownItems) do
+            if item and item.Destroy then
+                pcall(function() item:Destroy() end)
             end
         end
-    })
+        dropdownItems = {}
+        
+        for _, child in pairs(DropdownList:GetChildren()) do
+            if child:IsA("TextButton") then
+                child:Destroy()
+            end
+        end
+        
+        for i, option in ipairs(seedDisplayOptions) do
+            local ItemButton = Instance.new("TextButton")
+            ItemButton.Name = "Item_" .. i
+            ItemButton.Size = UDim2.new(1, -4, 0, 32)
+            ItemButton.Text = option
+            ItemButton.TextColor3 = theme.TextSecondary
+            ItemButton.BackgroundColor3 = theme.InputBg
+            ItemButton.BackgroundTransparency = 0
+            ItemButton.TextSize = 13
+            ItemButton.Font = Enum.Font.Gotham
+            ItemButton.AutoButtonColor = false
+            ItemButton.LayoutOrder = i
+            ItemButton.ZIndex = 12
+            ItemButton.Parent = DropdownList
+            
+            local ItemCorner = Instance.new("UICorner")
+            ItemCorner.CornerRadius = UDim.new(0, 4)
+            ItemCorner.Parent = ItemButton
+            
+            ItemButton.MouseEnter:Connect(function()
+                tween(ItemButton, {BackgroundColor3 = theme.ButtonHover}, 0.15)
+            end)
+            
+            ItemButton.MouseLeave:Connect(function()
+                if option == selectedDisplay then
+                    tween(ItemButton, {BackgroundColor3 = theme.Accent}, 0.15)
+                else
+                    tween(ItemButton, {BackgroundColor3 = theme.InputBg}, 0.15)
+                end
+            end)
+            
+            ItemButton.MouseButton1Click:Connect(function()
+                selectedDisplay = option
+                selectedSeed = displayToName[option]
+                DropdownButton.Text = selectedDisplay
+                
+                for _, btn in pairs(dropdownItems) do
+                    if btn then
+                        if btn.Text == selectedDisplay then
+                            btn.BackgroundColor3 = theme.Accent
+                            btn.TextColor3 = Color3.new(1, 1, 1)
+                        else
+                            btn.BackgroundColor3 = theme.InputBg
+                            btn.TextColor3 = theme.TextSecondary
+                        end
+                    end
+                end
+                
+                isOpen = false
+                ArrowLabel.Text = "▼"
+                tween(DropdownContainer, {Size = UDim2.new(0, 200, 0, 0)}, 0.15)
+                task.wait(0.15)
+                DropdownContainer.Visible = false
+                
+                Bdev:Notify({
+                    Title = "Bibit Dipilih",
+                    Content = option,
+                    Duration = 1
+                })
+                
+                if autoBuyEnabled then
+                    stopAutoBuy()
+                    startAutoBuy()
+                end
+            end)
+            
+            if option == selectedDisplay then
+                ItemButton.BackgroundColor3 = theme.Accent
+                ItemButton.TextColor3 = Color3.new(1, 1, 1)
+            end
+            
+            table.insert(dropdownItems, ItemButton)
+        end
+        
+        -- Update container height
+        local itemCount = #seedDisplayOptions
+        local height = math.min(itemCount * 34 + 4, 150)
+        DropdownContainer.Size = UDim2.new(0, 200, 0, 0)
+    end
+    
+    createDropdownItems()
+    
+    -- Toggle dropdown
+    DropdownButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        
+        if isOpen then
+            ArrowLabel.Text = "▲"
+            DropdownContainer.Visible = true
+            local itemCount = #seedDisplayOptions
+            local height = math.min(itemCount * 34 + 4, 150)
+            tween(DropdownContainer, {Size = UDim2.new(0, 200, 0, height)}, 0.2)
+            tween(DropdownButton, {BackgroundColor3 = theme.InputBgFocus}, 0.15)
+        else
+            ArrowLabel.Text = "▼"
+            tween(DropdownContainer, {Size = UDim2.new(0, 200, 0, 0)}, 0.15)
+            tween(DropdownButton, {BackgroundColor3 = theme.InputBg}, 0.15)
+            task.wait(0.15)
+            DropdownContainer.Visible = false
+        end
+    end)
+    
+    -- Klik di luar dropdown
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and isOpen then
+            local mousePos = UserInputService:GetMouseLocation()
+            local dropdownPos = DropdownMainFrame.AbsolutePosition
+            local dropdownSize = DropdownMainFrame.AbsoluteSize
+            
+            if mousePos.X < dropdownPos.X or mousePos.X > dropdownPos.X + dropdownSize.X or
+               mousePos.Y < dropdownPos.Y or mousePos.Y > dropdownPos.Y + dropdownSize.Y then
+                isOpen = false
+                ArrowLabel.Text = "▼"
+                tween(DropdownContainer, {Size = UDim2.new(0, 200, 0, 0)}, 0.15)
+                tween(DropdownButton, {BackgroundColor3 = theme.InputBg}, 0.15)
+                task.wait(0.15)
+                DropdownContainer.Visible = false
+            end
+        end
+    end)
     
     -- 3. HEADER PENGATURAN
     local header2 = Tab:CreateLabel({
@@ -466,7 +711,7 @@ function ShopAutoBuy.Init(Dependencies)
     StopBtn.TextColor3 = theme.Error or Color3.fromRGB(255, 70, 70)
     StopBtn.BackgroundColor3 = theme.Button
     StopBtn.BackgroundTransparency = 0
-    StopBtn.TextSize = 18
+    StopBtn.TextSize = 14
     StopBtn.Font = Enum.Font.GothamBold
     StopBtn.AutoButtonColor = false
     StopBtn.Parent = ActionInner
@@ -555,9 +800,7 @@ function ShopAutoBuy.Init(Dependencies)
             if displayToName[seedDisplay] then
                 selectedDisplay = seedDisplay
                 selectedSeed = displayToName[seedDisplay]
-                if dropdownRef and dropdownRef.SetValue then
-                    dropdownRef:SetValue(seedDisplay)
-                end
+                DropdownButton.Text = selectedDisplay
             end
         end,
         SetQuantity = function(value)
