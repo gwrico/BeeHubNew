@@ -85,8 +85,6 @@ function ShopAutoBuy.Init(Dependencies)
     
     -- Variable untuk menyimpan references
     local dropdownRef = nil
-    local infoLabelRef = nil
-    local statusLabelRef = nil
     
     -- ===== FUNGSI CEK REMOTE =====
     local function checkRemote()
@@ -152,11 +150,6 @@ function ShopAutoBuy.Init(Dependencies)
             Duration = 3
         })
         
-        if statusLabelRef then
-            statusLabelRef.Text = "● Status: AKTIF"
-            statusLabelRef.TextColor3 = theme.Accent
-        end
-        
         local lastBuyTime = 0
         autoBuyConnection = RunService.Heartbeat:Connect(function()
             if not autoBuyEnabled then return end
@@ -180,18 +173,6 @@ function ShopAutoBuy.Init(Dependencies)
             Content = "Dihentikan",
             Duration = 2
         })
-        
-        if statusLabelRef then
-            statusLabelRef.Text = "● Status: NONAKTIF"
-            statusLabelRef.TextColor3 = theme.TextSecondary
-        end
-    end
-    
-    -- ===== FUNGSI UPDATE INFO LABEL =====
-    local function updateInfoLabel()
-        if infoLabelRef then
-            infoLabelRef.Text = "➤ Bibit aktif: " .. selectedDisplay
-        end
     end
     
     -- ===== MEMBUAT UI DENGAN DROPDOWN SAMPING =====
@@ -206,7 +187,6 @@ function ShopAutoBuy.Init(Dependencies)
     })
     
     -- 2. DROPDOWN (LABEL DI SAMPING KIRI, BUTTON DI KANAN)
-    -- Method CreateDropdown di SimpleGUI sudah mengatur ini secara otomatis
     dropdownRef = Tab:CreateDropdown({
         Name = "SeedDropdown",
         Text = "Pilih Bibit:",  -- Label akan di kiri
@@ -215,7 +195,6 @@ function ShopAutoBuy.Init(Dependencies)
         Callback = function(value)
             selectedDisplay = value
             selectedSeed = displayToName[value]
-            updateInfoLabel()
             
             Bdev:Notify({
                 Title = "Bibit Dipilih",
@@ -231,30 +210,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 3. INFO BIBIT AKTIF
-    infoLabelRef = Tab:CreateLabel({
-        Name = "InfoLabel",
-        Text = "➤ Bibit aktif: " .. selectedDisplay,
-        Color = theme.Text,
-        Alignment = Enum.TextXAlignment.Left
-    })
-    
-    -- 4. STATUS AUTO BUY
-    statusLabelRef = Tab:CreateLabel({
-        Name = "StatusLabel",
-        Text = "● Status: NONAKTIF",
-        Color = theme.TextSecondary,
-        Alignment = Enum.TextXAlignment.Left
-    })
-    
-    -- 5. SPACER
-    Tab:CreateLabel({
-        Name = "Spacer1",
-        Text = "",
-        Alignment = Enum.TextXAlignment.Center
-    })
-    
-    -- 6. HEADER PENGATURAN
+    -- 3. HEADER PENGATURAN
     local header2 = Tab:CreateLabel({
         Name = "Header_Pengaturan",
         Text = "───── ⚙️ PENGATURAN ─────",
@@ -263,7 +219,7 @@ function ShopAutoBuy.Init(Dependencies)
         Alignment = Enum.TextXAlignment.Center
     })
     
-    -- 7. FRAME UNTUK QUANTITY DAN DELAY (SEJAJAR)
+    -- 4. FRAME UNTUK QUANTITY DAN DELAY (SEJAJAR)
     local SettingsFrame = Instance.new("Frame")
     SettingsFrame.Name = "SettingsFrame"
     SettingsFrame.Size = UDim2.new(0.95, 0, 0, 50)
@@ -407,7 +363,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
-    -- 8. FRAME UNTUK TOMBOL AKSI
+    -- 5. FRAME UNTUK TOMBOL AKSI
     local ActionFrame = Instance.new("Frame")
     ActionFrame.Name = "ActionFrame"
     ActionFrame.Size = UDim2.new(0.95, 0, 0, 60)
@@ -556,7 +512,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
-    -- 9. FOOTER
+    -- 6. FOOTER
     Tab:CreateLabel({
         Name = "Footer",
         Text = "─────────────────────",
@@ -602,7 +558,6 @@ function ShopAutoBuy.Init(Dependencies)
                 if dropdownRef and dropdownRef.SetValue then
                     dropdownRef:SetValue(seedDisplay)
                 end
-                updateInfoLabel()
             end
         end,
         SetQuantity = function(value)
@@ -623,7 +578,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     }
     
-    print("✅ Shop module loaded - Bee Futuristic Edition dengan Dropdown Samping")
+    print("✅ Shop module loaded - Bee Futuristic Edition")
     
     return cleanup
 end
