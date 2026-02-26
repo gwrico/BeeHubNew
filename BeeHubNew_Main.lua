@@ -5,7 +5,7 @@
 -- Configuration
 local CONFIG = {
     SIMPLEGUI_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/SimpleGUI_NEO.lua",
-    MODULES_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/main/",
+    MODULES_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/",
     LOAD_TIMEOUT = 10
 }
 
