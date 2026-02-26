@@ -1,5 +1,5 @@
 -- ==============================================
--- 🛒 SHOP MODULE - BELI BIBIT (BEE FUTURISTIC EDITION)
+-- 🛒 SHOP MODULE - BELI BIBIT (UPDATE)
 -- ==============================================
 
 local ShopAutoBuy = {}
