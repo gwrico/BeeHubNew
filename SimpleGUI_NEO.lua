@@ -763,6 +763,7 @@ function SimpleGUI:CreateWindow(options)
                 return Label
             end,
             
+            -- ===== CREATE TOGGLE (DIPERBAIKI - TOGGLE DI KANAN) =====
             CreateToggle = function(self, options)
                 local opts = options or {}
                 local scale = windowData.Scale
@@ -774,11 +775,24 @@ function SimpleGUI:CreateWindow(options)
                 ToggleFrame.LayoutOrder = #self.Elements + 1
                 ToggleFrame.Parent = TabContent
                 
-                -- Toggle container
+                -- Toggle label (teks menu) di KIRI
+                local ToggleLabel = Instance.new("TextLabel")
+                ToggleLabel.Name = "ToggleLabel"
+                ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)  -- 70% lebar untuk teks
+                ToggleLabel.Position = UDim2.new(0, 0, 0, 0)
+                ToggleLabel.Text = opts.Text or opts.Name or "Toggle"
+                ToggleLabel.TextColor3 = theme.Text
+                ToggleLabel.BackgroundTransparency = 1
+                ToggleLabel.TextSize = 13 * scale
+                ToggleLabel.Font = Enum.Font.Gotham
+                ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                ToggleLabel.Parent = ToggleFrame
+                
+                -- Toggle container di KANAN
                 local ToggleContainer = Instance.new("TextButton")
                 ToggleContainer.Name = "ToggleContainer"
                 ToggleContainer.Size = UDim2.new(0, 48 * scale, 0, 24 * scale)
-                ToggleContainer.Position = UDim2.new(0, 0, 0.5, -12 * scale)
+                ToggleContainer.Position = UDim2.new(1, -58 * scale, 0.5, -12 * scale)  -- Posisi di kanan
                 ToggleContainer.Text = ""
                 ToggleContainer.BackgroundColor3 = theme.ToggleOff
                 ToggleContainer.BackgroundTransparency = 0
@@ -804,23 +818,9 @@ function SimpleGUI:CreateWindow(options)
                 CircleCorner.CornerRadius = UDim.new(0.5, 0)
                 CircleCorner.Parent = ToggleCircle
                 
-                -- Glow effect
+                -- Glow effect (opsional)
                 local ToggleGlow = createGlow(ToggleContainer, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
                 ToggleGlow.ImageTransparency = 1
-                
-                -- Toggle label
-                local ToggleLabel = Instance.new("TextButton")
-                ToggleLabel.Name = "ToggleLabel"
-                ToggleLabel.Size = UDim2.new(1, -58 * scale, 1, 0)
-                ToggleLabel.Position = UDim2.new(0, 58 * scale, 0, 0)
-                ToggleLabel.Text = opts.Text or opts.Name or "Toggle"
-                ToggleLabel.TextColor3 = theme.Text
-                ToggleLabel.BackgroundTransparency = 1
-                ToggleLabel.TextSize = 13 * scale
-                ToggleLabel.Font = Enum.Font.Gotham
-                ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-                ToggleLabel.AutoButtonColor = false
-                ToggleLabel.Parent = ToggleFrame
                 
                 -- Toggle state
                 local isToggled = opts.CurrentValue or false
@@ -848,7 +848,13 @@ function SimpleGUI:CreateWindow(options)
                 end
                 
                 ToggleContainer.MouseButton1Click:Connect(toggle)
-                ToggleLabel.MouseButton1Click:Connect(toggle)
+                
+                -- Bisa juga klik label untuk toggle
+                ToggleLabel.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        toggle()
+                    end
+                end)
                 
                 table.insert(self.Elements, ToggleFrame)
                 
