@@ -87,6 +87,8 @@ function ShopAutoBuy.Init(Dependencies)
     local dropdownRef = nil
     local autoToggleRef = nil
     local buyToggleRef = nil
+    local qtyBoxRef = nil
+    local delayBoxRef = nil
     
     -- ===== FUNGSI CEK REMOTE =====
     local function checkRemote()
@@ -174,9 +176,9 @@ function ShopAutoBuy.Init(Dependencies)
         })
     end
     
-    -- ===== MEMBUAT UI (RAPI SEPERTI MISC) =====
+    -- ===== MEMBUAT UI DENGAN ELEMENT SIMPLEGUI =====
     
-    -- 1. DROPDOWN (tetap pakai CreateDropdown bawaan)
+    -- 1. DROPDOWN
     dropdownRef = Tab:CreateDropdown({
         Name = "SeedDropdown",
         Text = "🌱 Pilih Bibit",
@@ -199,49 +201,56 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 2. JUMLAH BIBIT (menggunakan slider agar rapi)
-    Tab:CreateLabel({
-        Name = "QtyLabel",
-        Text = "   🔢 Jumlah Bibit:",
-        Color = theme.TextSecondary,
-        Alignment = Enum.TextXAlignment.Left
-    })
-    
-    -- Slider untuk quantity
-    Tab:CreateSlider({
-        Name = "QuantitySlider",
-        Range = {1, 99},
-        CurrentValue = buyQuantity,
-        Increment = 1,
-        Callback = function(value)
-            buyQuantity = value
-        end
-    })
-    
-    -- 3. DELAY (menggunakan slider agar rapi)
-    Tab:CreateLabel({
-        Name = "DelayLabel",
-        Text = "   ⏱️ Delay (detik):",
-        Color = theme.TextSecondary,
-        Alignment = Enum.TextXAlignment.Left
-    })
-    
-    -- Slider untuk delay
-    Tab:CreateSlider({
-        Name = "DelaySlider",
-        Range = {0.5, 5},
-        CurrentValue = buyDelay,
-        Increment = 0.5,
-        Callback = function(value)
-            buyDelay = value
-            if autoBuyEnabled then
-                stopAutoBuy()
-                startAutoBuy()
+    -- 2. JUMLAH BIBIT - MENGGUNAKAN TEXTBOX
+    qtyBoxRef = Tab:CreateTextBox({
+        Name = "QuantityBox",
+        Label = "🔢 Jumlah Bibit",  -- Label di kiri
+        Text = tostring(buyQuantity),
+        Placeholder = "1-99",
+        Callback = function(text)
+            local value = tonumber(text)
+            if value and value >= 1 and value <= 99 then
+                buyQuantity = math.floor(value)
+                return tostring(buyQuantity)
+            else
+                Bdev:Notify({
+                    Title = "❌ Invalid",
+                    Content = "Jumlah harus 1-99",
+                    Duration = 2
+                })
+                return tostring(buyQuantity)
             end
         end
     })
     
-    -- 4. BELI SEKARANG (sebagai toggle, seperti di Misc)
+    -- 3. DELAY - MENGGUNAKAN TEXTBOX
+    delayBoxRef = Tab:CreateTextBox({
+        Name = "DelayBox",
+        Label = "⏱️ Delay (detik)",  -- Label di kiri
+        Text = tostring(buyDelay) .. "s",
+        Placeholder = "0.5-5",
+        Callback = function(text)
+            local text = text:gsub("s", "")
+            local value = tonumber(text)
+            if value and value >= 0.5 and value <= 5 then
+                buyDelay = value
+                if autoBuyEnabled then
+                    stopAutoBuy()
+                    startAutoBuy()
+                end
+                return tostring(value) .. "s"
+            else
+                Bdev:Notify({
+                    Title = "❌ Invalid",
+                    Content = "Delay harus 0.5-5 detik",
+                    Duration = 2
+                })
+                return tostring(buyDelay) .. "s"
+            end
+        end
+    })
+    
+    -- 4. BELI SEKARANG (TOGGLE)
     buyToggleRef = Tab:CreateToggle({
         Name = "BuyNowToggle",
         Text = "🛒 Beli Sekarang",
@@ -258,7 +267,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 5. AUTO BUY (toggle, seperti di Misc)
+    -- 5. AUTO BUY (TOGGLE)
     autoToggleRef = Tab:CreateToggle({
         Name = "AutoBuyToggle",
         Text = "🤖 Auto Buy",
@@ -330,12 +339,18 @@ function ShopAutoBuy.Init(Dependencies)
         end,
         SetQuantity = function(value)
             if value and value >= 1 and value <= 99 then
-                buyQuantity = value
+                buyQuantity = math.floor(value)
+                if qtyBoxRef and qtyBoxRef.SetText then
+                    qtyBoxRef:SetText(tostring(buyQuantity))
+                end
             end
         end,
         SetDelay = function(value)
             if value and value >= 0.5 and value <= 5 then
                 buyDelay = value
+                if delayBoxRef and delayBoxRef.SetText then
+                    delayBoxRef:SetText(tostring(value) .. "s")
+                end
                 if autoBuyEnabled then
                     stopAutoBuy()
                     startAutoBuy()
@@ -344,7 +359,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     }
     
-    print("✅ Shop module loaded - Rapi seperti Misc")
+    print("✅ Shop module loaded - Menggunakan element SimpleGUI")
     
     return cleanup
 end
