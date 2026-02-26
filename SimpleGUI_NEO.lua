@@ -176,13 +176,13 @@ function SimpleGUI:CreateWindow(options)
     
     local windowData = {
         Name = opts.Name or "BEE HUB",
-        SubName = opts.SubName or "Futuristic Edition | system.online",
+        SubName = opts.SubName or "discord.gg/abcd | Bee Black",
         Size = opts.Size or UDim2.new(0, 750 * scale, 0, 520 * scale),
         Position = opts.Position or UDim2.new(0.5, -375 * scale, 0.5, -260 * scale),
         IsMobile = isMobile,
         Scale = scale,
         SidebarWidth = 190 * scale,
-        Logo = "N"
+        Logo = "B"
     }
     
     local theme = self:GetTheme()
@@ -266,7 +266,7 @@ function SimpleGUI:CreateWindow(options)
     TitleIcon.Name = "TitleIcon"
     TitleIcon.Size = UDim2.new(0, 38 * scale, 0, 38 * scale)
     TitleIcon.Position = UDim2.new(0, 0, 0.5, -19 * scale)
-    TitleIcon.Text = "N"
+    TitleIcon.Text = "B"
     TitleIcon.TextColor3 = Color3.new(1, 1, 1)
     TitleIcon.BackgroundColor3 = theme.Accent
     TitleIcon.BackgroundTransparency = 0
@@ -352,7 +352,7 @@ function SimpleGUI:CreateWindow(options)
     CloseButton.Name = "CloseButton"
     CloseButton.Size = UDim2.new(0, buttonSize, 0, buttonSize)
     CloseButton.Position = UDim2.new(1, -buttonSize - 12 * scale, 0.5, -buttonSize/2)
-    CloseButton.Text = "✕"
+    CloseButton.Text = "X"
     CloseButton.TextColor3 = theme.Error
     CloseButton.BackgroundColor3 = theme.Button
     CloseButton.BackgroundTransparency = 0
