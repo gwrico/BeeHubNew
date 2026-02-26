@@ -88,6 +88,7 @@ function ShopAutoBuy.Init(Dependencies)
     -- Variable untuk menyimpan references
     local dropdownRef = nil
     local autoToggleRef = nil
+    local buyToggleRef = nil
     
     -- ===== FUNGSI CEK REMOTE =====
     local function checkRemote()
@@ -405,7 +406,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
-    -- 4. FRAME UNTUK BELI SEKARANG (BARIS 3)
+    -- 4. FRAME UNTUK BELI SEKARANG (BARIS 3) - DENGAN TOGGLE
     local BuyFrame = Instance.new("Frame")
     BuyFrame.Name = "BuyFrame"
     BuyFrame.Size = UDim2.new(0.95, 0, 0, 60)
@@ -433,33 +434,28 @@ function ShopAutoBuy.Init(Dependencies)
     BuyInnerCorner.CornerRadius = UDim.new(0, 6)
     BuyInnerCorner.Parent = BuyInner
     
-    local BuyLayout = Instance.new("UIListLayout")
-    BuyLayout.FillDirection = Enum.FillDirection.Horizontal
-    BuyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    BuyLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    BuyLayout.Padding = UDim.new(0, 10)
-    BuyLayout.Parent = BuyInner
+    -- Toggle untuk Beli Sekarang (sekali pakai)
+    buyToggleRef = Tab:CreateToggle({
+        Name = "BuyNowToggle",
+        Text = "Beli Sekarang",  -- Teks di kiri, toggle di kanan
+        CurrentValue = false,
+        Callback = function(state)
+            if state then
+                buySeed(selectedSeed, buyQuantity, false)
+                -- Kembalikan ke false setelah beli
+                task.wait(0.1)
+                if buyToggleRef and buyToggleRef.SetValue then
+                    buyToggleRef:SetValue(false)
+                end
+            end
+        end
+    })
     
-    -- Tombol Beli Sekarang
-    local BuyNowBtn = Instance.new("TextButton")
-    BuyNowBtn.Name = "BuyNowBtn"
-    BuyNowBtn.Size = UDim2.new(0, 200, 0, 40)
-    BuyNowBtn.Text = "🛒 BELI SEKARANG"
-    BuyNowBtn.TextColor3 = theme.Text
-    BuyNowBtn.BackgroundColor3 = theme.Accent
-    BuyNowBtn.BackgroundTransparency = 0
-    BuyNowBtn.TextSize = 14
-    BuyNowBtn.Font = Enum.Font.GothamBold
-    BuyNowBtn.AutoButtonColor = false
-    BuyNowBtn.Parent = BuyInner
-    
-    local BuyBtnCorner = Instance.new("UICorner")
-    BuyBtnCorner.CornerRadius = UDim.new(0, 8)
-    BuyBtnCorner.Parent = BuyNowBtn
-    
-    BuyNowBtn.MouseButton1Click:Connect(function()
-        buySeed(selectedSeed, buyQuantity, false)
-    end)
+    -- Reparent toggle ke BuyInner
+    if buyToggleRef and buyToggleRef.Frame then
+        buyToggleRef.Frame.Parent = BuyInner
+        buyToggleRef.Frame.Size = UDim2.new(1, -20, 0, 40)
+    end
     
     -- 5. FRAME UNTUK AUTO BUY (BARIS 4) - DENGAN TOGGLE
     local AutoFrame = Instance.new("Frame")
@@ -489,26 +485,7 @@ function ShopAutoBuy.Init(Dependencies)
     AutoInnerCorner.CornerRadius = UDim.new(0, 6)
     AutoInnerCorner.Parent = AutoInner
     
-    local AutoLayout = Instance.new("UIListLayout")
-    AutoLayout.FillDirection = Enum.FillDirection.Horizontal
-    AutoLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    AutoLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    AutoLayout.Padding = UDim.new(0, 10)
-    AutoLayout.Parent = AutoInner
-    
-    -- Label "Auto Buy"
-    local AutoLabel = Instance.new("TextLabel")
-    AutoLabel.Name = "AutoLabel"
-    AutoLabel.Size = UDim2.new(0, 100, 0, 30)
-    AutoLabel.Text = "Auto Buy:"
-    AutoLabel.TextColor3 = theme.Text
-    AutoLabel.BackgroundTransparency = 1
-    AutoLabel.TextSize = 14
-    AutoLabel.Font = Enum.Font.GothamBold
-    AutoLabel.TextXAlignment = Enum.TextXAlignment.Right
-    AutoLabel.Parent = AutoInner
-    
-    -- Toggle Auto Buy (menggunakan CreateToggle dari SimpleGUI)
+    -- Toggle Auto Buy
     autoToggleRef = Tab:CreateToggle({
         Name = "AutoBuyToggle",
         Text = "Auto Buy",  -- Teks di kiri, toggle di kanan
@@ -532,12 +509,7 @@ function ShopAutoBuy.Init(Dependencies)
     -- Reparent toggle ke AutoInner
     if autoToggleRef and autoToggleRef.Frame then
         autoToggleRef.Frame.Parent = AutoInner
-        autoToggleRef.Frame.Size = UDim2.new(0, 200, 0, 40)
-        -- Sesuaikan posisi
-        local toggleLabel = autoToggleRef.Frame:FindFirstChild("ToggleLabel")
-        if toggleLabel then
-            toggleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-        end
+        autoToggleRef.Frame.Size = UDim2.new(1, -20, 0, 40)
     end
     
     -- 6. FOOTER
@@ -547,15 +519,6 @@ function ShopAutoBuy.Init(Dependencies)
         Color = theme.TextMuted,
         Alignment = Enum.TextXAlignment.Center
     })
-    
-    -- Hover effect untuk tombol beli
-    BuyNowBtn.MouseEnter:Connect(function()
-        tween(BuyNowBtn, {BackgroundColor3 = Color3.fromRGB(255, 60, 60)}, 0.15)
-    end)
-    
-    BuyNowBtn.MouseLeave:Connect(function()
-        tween(BuyNowBtn, {BackgroundColor3 = theme.Accent}, 0.15)
-    end)
     
     -- ===== CLEANUP FUNCTION =====
     local function cleanup()
