@@ -1,5 +1,5 @@
 -- ==============================================
--- 🛒 SHOP MODULE - BELI BIBIT (UPDATE)
+-- 🛒 SHOP MODULE - BELI BIBIT (BEE FUTURISTIC EDITION)
 -- ==============================================
 
 local ShopAutoBuy = {}
@@ -42,6 +42,140 @@ function ShopAutoBuy.Init(Dependencies)
         local tween = TweenService:Create(object, tweenInfo, properties)
         tween:Play()
         return tween
+    end
+    
+    -- ===== CREATE TEXTBOX LOKAL (agar tidak mengganggu SimpleGUI) =====
+    local function createTextBox(options)
+        local opts = options or {}
+        
+        -- Main frame dengan border
+        local MainFrame = Instance.new("Frame")
+        MainFrame.Name = opts.Name or "TextBox_" .. math.random(1000, 9999)
+        MainFrame.Size = UDim2.new(0.95, 0, 0, 40)
+        MainFrame.BackgroundColor3 = theme.ContentCard
+        MainFrame.BackgroundTransparency = 0
+        MainFrame.BorderSizePixel = 2
+        MainFrame.BorderColor3 = theme.BorderLight
+        MainFrame.LayoutOrder = #Tab.Elements + 1
+        MainFrame.Parent = Tab.Content
+        
+        local MainCorner = Instance.new("UICorner")
+        MainCorner.CornerRadius = UDim.new(0, 6)
+        MainCorner.Parent = MainFrame
+        
+        -- Inner frame untuk padding
+        local InnerFrame = Instance.new("Frame")
+        InnerFrame.Name = "InnerFrame"
+        InnerFrame.Size = UDim2.new(1, -4, 1, -4)
+        InnerFrame.Position = UDim2.new(0, 2, 0, 2)
+        InnerFrame.BackgroundColor3 = theme.ContentCard
+        InnerFrame.BackgroundTransparency = 0
+        InnerFrame.BorderSizePixel = 0
+        InnerFrame.Parent = MainFrame
+        
+        local InnerCorner = Instance.new("UICorner")
+        InnerCorner.CornerRadius = UDim.new(0, 4)
+        InnerCorner.Parent = InnerFrame
+        
+        -- Layout horizontal
+        local Layout = Instance.new("UIListLayout")
+        Layout.FillDirection = Enum.FillDirection.Horizontal
+        Layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+        Layout.VerticalAlignment = Enum.VerticalAlignment.Center
+        Layout.Padding = UDim.new(0, 10)
+        Layout.Parent = InnerFrame
+        
+        -- Label di KIRI
+        local Label = Instance.new("TextLabel")
+        Label.Name = "Label"
+        Label.Size = UDim2.new(0, 100, 0, 30)
+        Label.Text = opts.Label or "Input:"
+        Label.TextColor3 = theme.Text
+        Label.BackgroundTransparency = 1
+        Label.TextSize = 14
+        Label.Font = Enum.Font.GothamBold
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+        Label.Parent = InnerFrame
+        
+        -- Input frame di KANAN
+        local InputFrame = Instance.new("Frame")
+        InputFrame.Name = "InputFrame"
+        InputFrame.Size = UDim2.new(0, 150, 0, 32)
+        InputFrame.BackgroundColor3 = theme.InputBg
+        InputFrame.BackgroundTransparency = 0
+        InputFrame.Parent = InnerFrame
+        
+        local InputCorner = Instance.new("UICorner")
+        InputCorner.CornerRadius = UDim.new(0, 5)
+        InputCorner.Parent = InputFrame
+        
+        -- Icon (optional)
+        local Icon = Instance.new("TextLabel")
+        Icon.Name = "Icon"
+        Icon.Size = UDim2.new(0, 32, 1, 0)
+        Icon.Text = opts.Icon or "📝"
+        Icon.TextColor3 = theme.Accent
+        Icon.BackgroundTransparency = 1
+        Icon.TextSize = 16
+        Icon.Font = Enum.Font.GothamBold
+        Icon.Parent = InputFrame
+        
+        -- TextBox
+        local TextBox = Instance.new("TextBox")
+        TextBox.Name = "TextBox"
+        TextBox.Size = UDim2.new(1, -32, 1, 0)
+        TextBox.Position = UDim2.new(0, 32, 0, 0)
+        TextBox.Text = opts.Text or ""
+        TextBox.TextColor3 = theme.Text
+        TextBox.BackgroundTransparency = 1
+        TextBox.TextSize = 14
+        TextBox.Font = Enum.Font.Gotham
+        TextBox.ClearTextOnFocus = false
+        TextBox.Parent = InputFrame
+        
+        -- Placeholder
+        if opts.Placeholder and TextBox.Text == "" then
+            TextBox.Text = opts.Placeholder
+            TextBox.TextColor3 = theme.TextMuted
+        end
+        
+        -- Focus handling
+        TextBox.Focused:Connect(function()
+            if TextBox.Text == opts.Placeholder then
+                TextBox.Text = ""
+                TextBox.TextColor3 = theme.Text
+            end
+        end)
+        
+        TextBox.FocusLost:Connect(function(enterPressed)
+            if opts.Callback then
+                local newText = opts.Callback(TextBox.Text)
+                if newText then
+                    TextBox.Text = newText
+                end
+            end
+            
+            if TextBox.Text == "" and opts.Placeholder then
+                TextBox.Text = opts.Placeholder
+                TextBox.TextColor3 = theme.TextMuted
+            end
+        end)
+        
+        -- Return object dengan method
+        local textBoxObj = {
+            Frame = MainFrame,
+            TextBox = TextBox,
+            SetText = function(self, text)
+                TextBox.Text = tostring(text)
+                TextBox.TextColor3 = theme.Text
+            end,
+            GetText = function(self)
+                return TextBox.Text
+            end
+        }
+        
+        table.insert(Tab.Elements, MainFrame)
+        return textBoxObj
     end
     
     -- ===== REMOTE SHOP =====
@@ -176,7 +310,7 @@ function ShopAutoBuy.Init(Dependencies)
         })
     end
     
-    -- ===== MEMBUAT UI DENGAN ELEMENT SIMPLEGUI =====
+    -- ===== MEMBUAT UI =====
     
     -- 1. DROPDOWN
     dropdownRef = Tab:CreateDropdown({
@@ -201,10 +335,11 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 2. JUMLAH BIBIT - MENGGUNAKAN TEXTBOX
-    qtyBoxRef = Tab:CreateTextBox({
+    -- 2. JUMLAH BIBIT - TEXTBOX
+    qtyBoxRef = createTextBox({
         Name = "QuantityBox",
-        Label = "🔢 Jumlah Bibit",  -- Label di kiri
+        Label = "🔢 Jumlah Bibit",
+        Icon = "🔢",
         Text = tostring(buyQuantity),
         Placeholder = "1-99",
         Callback = function(text)
@@ -223,15 +358,16 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 3. DELAY - MENGGUNAKAN TEXTBOX
-    delayBoxRef = Tab:CreateTextBox({
+    -- 3. DELAY - TEXTBOX
+    delayBoxRef = createTextBox({
         Name = "DelayBox",
-        Label = "⏱️ Delay (detik)",  -- Label di kiri
+        Label = "⏱️ Delay (detik)",
+        Icon = "⏱️",
         Text = tostring(buyDelay) .. "s",
         Placeholder = "0.5-5",
         Callback = function(text)
-            local text = text:gsub("s", "")
-            local value = tonumber(text)
+            local cleanText = text:gsub("s", "")
+            local value = tonumber(cleanText)
             if value and value >= 0.5 and value <= 5 then
                 buyDelay = value
                 if autoBuyEnabled then
@@ -258,7 +394,6 @@ function ShopAutoBuy.Init(Dependencies)
         Callback = function(state)
             if state then
                 buySeed(selectedSeed, buyQuantity, false)
-                -- Kembalikan ke false setelah beli
                 task.wait(0.1)
                 if buyToggleRef and buyToggleRef.SetValue then
                     buyToggleRef:SetValue(false)
@@ -359,7 +494,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     }
     
-    print("✅ Shop module loaded - Menggunakan element SimpleGUI")
+    print("✅ Shop module loaded - Dengan TextBox lokal")
     
     return cleanup
 end
