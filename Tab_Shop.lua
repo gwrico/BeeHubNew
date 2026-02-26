@@ -29,6 +29,7 @@ function ShopAutoBuy.Init(Dependencies)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local RunService = game:GetService("RunService")
     local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")  -- ← TAMBAHKAN INI!
     
     -- ===== FUNGSI TWEEN LOKAL =====
     local function tween(object, properties, duration, easingStyle)
@@ -707,11 +708,11 @@ function ShopAutoBuy.Init(Dependencies)
     local StopBtn = Instance.new("TextButton")
     StopBtn.Name = "StopBtn"
     StopBtn.Size = UDim2.new(0, 50, 0, 40)
-    StopBtn.Text = "⏹ STOP"
+    StopBtn.Text = "⏹"
     StopBtn.TextColor3 = theme.Error or Color3.fromRGB(255, 70, 70)
     StopBtn.BackgroundColor3 = theme.Button
     StopBtn.BackgroundTransparency = 0
-    StopBtn.TextSize = 14
+    StopBtn.TextSize = 18
     StopBtn.Font = Enum.Font.GothamBold
     StopBtn.AutoButtonColor = false
     StopBtn.Parent = ActionInner
