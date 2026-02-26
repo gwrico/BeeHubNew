@@ -272,7 +272,7 @@ function SimpleGUI:CreateWindow(options)
     TitleIcon.BackgroundColor3 = theme.Accent
     TitleIcon.BackgroundTransparency = 0
     TitleIcon.TextSize = 22 * scale
-    TitleIcon.Font = Enum.Font.GothamBlackBlack
+    TitleIcon.Font = Enum.Font.GothamBlack
     TitleIcon.Parent = TitleContainer
     
     -- Efek glow pada icon
@@ -310,7 +310,7 @@ function SimpleGUI:CreateWindow(options)
     TitleLabel.TextColor3 = theme.Text
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.TextSize = 16 * scale
-    TitleLabel.Font = Enum.Font.GothamBlackBlack
+    TitleLabel.Font = Enum.Font.GothamBlack
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TitleTextFrame
     
@@ -323,7 +323,7 @@ function SimpleGUI:CreateWindow(options)
     SubTitleLabel.TextColor3 = theme.Accent  -- Merah untuk sub title
     SubTitleLabel.BackgroundTransparency = 1
     SubTitleLabel.TextSize = 11 * scale
-    SubTitleLabel.Font = Enum.Font.GothamBlack
+    SubTitleLabel.Font = Enum.Font.Gotham  -- Tetap Gotham untuk subtitle (lebih tipis)
     SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     SubTitleLabel.Parent = TitleTextFrame
     
@@ -341,7 +341,7 @@ function SimpleGUI:CreateWindow(options)
     MinimizeButton.BackgroundColor3 = theme.Button
     MinimizeButton.BackgroundTransparency = 0
     MinimizeButton.TextSize = 20 * scale
-    MinimizeButton.Font = Enum.Font.GothamBlack
+    MinimizeButton.Font = Enum.Font.Gotham
     MinimizeButton.Parent = TitleBar
     
     local MinimizeButtonCorner = Instance.new("UICorner")
@@ -358,7 +358,7 @@ function SimpleGUI:CreateWindow(options)
     CloseButton.BackgroundColor3 = theme.Button
     CloseButton.BackgroundTransparency = 0
     CloseButton.TextSize = 18 * scale
-    CloseButton.Font = Enum.Font.GothamBlack
+    CloseButton.Font = Enum.Font.Gotham
     CloseButton.Parent = TitleBar
     
     local CloseButtonCorner = Instance.new("UICorner")
@@ -417,7 +417,7 @@ function SimpleGUI:CreateWindow(options)
     HeaderLabel.TextColor3 = theme.Accent  -- Merah untuk MENU
     HeaderLabel.BackgroundTransparency = 1
     HeaderLabel.TextSize = 14 * scale
-    HeaderLabel.Font = Enum.Font.GothamBlackBlack
+    HeaderLabel.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
     HeaderLabel.TextXAlignment = Enum.TextXAlignment.Left
     HeaderLabel.Parent = SidebarHeader
     
@@ -507,7 +507,7 @@ function SimpleGUI:CreateWindow(options)
         HeaderTitle.TextColor3 = theme.Accent  -- Merah untuk section header
         HeaderTitle.BackgroundTransparency = 1
         HeaderTitle.TextSize = 15 * scale
-        HeaderTitle.Font = Enum.Font.GothamBlackBlack
+        HeaderTitle.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
         HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
         HeaderTitle.Parent = HeaderFrame
         
@@ -602,7 +602,7 @@ function SimpleGUI:CreateWindow(options)
         TabButton.BackgroundColor3 = theme.TabNormal
         TabButton.BackgroundTransparency = 0
         TabButton.TextSize = 13 * scale
-        TabButton.Font = Enum.Font.GothamBlack
+        TabButton.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
         TabButton.TextXAlignment = Enum.TextXAlignment.Left
         TabButton.AutoButtonColor = false
         TabButton.LayoutOrder = #self.Tabs + 1
@@ -698,7 +698,7 @@ function SimpleGUI:CreateWindow(options)
                 Button.BackgroundColor3 = theme.Button
                 Button.BackgroundTransparency = 0
                 Button.TextSize = 13 * scale
-                Button.Font = Enum.Font.GothamBlack
+                Button.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
                 Button.AutoButtonColor = false
                 Button.LayoutOrder = #self.Elements + 1
                 Button.Parent = TabContent
@@ -755,7 +755,8 @@ function SimpleGUI:CreateWindow(options)
                 Label.TextColor3 = opts.Color or theme.TextSecondary
                 Label.BackgroundTransparency = 1
                 Label.TextSize = opts.Size or 13 * scale
-                Label.Font = opts.Bold and Enum.Font.GothamBlackBlack or Enum.Font.GothamBlack
+                -- ABaIKAN OPSI BOLD, SELALU PAKAI GOTHAMBLACK
+                Label.Font = Enum.Font.GothamBlack
                 Label.TextXAlignment = opts.Alignment or Enum.TextXAlignment.Left
                 Label.LayoutOrder = #self.Elements + 1
                 Label.Parent = TabContent
@@ -772,10 +773,10 @@ function SimpleGUI:CreateWindow(options)
                 -- Main container dengan border FULL
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Name = opts.Name or "Toggle_" .. #self.Elements + 1
-                ToggleFrame.Size = UDim2.new(0.95, 0, 0, 46 * scale)  -- Tinggi konsisten
+                ToggleFrame.Size = UDim2.new(0.95, 0, 0, 46 * scale)
                 ToggleFrame.BackgroundColor3 = theme.ContentCard
                 ToggleFrame.BackgroundTransparency = 0
-                ToggleFrame.BorderSizePixel = 2  -- Border lebih tebal
+                ToggleFrame.BorderSizePixel = 2
                 ToggleFrame.BorderColor3 = theme.BorderLight
                 ToggleFrame.LayoutOrder = #self.Elements + 1
                 ToggleFrame.Parent = TabContent
@@ -785,52 +786,52 @@ function SimpleGUI:CreateWindow(options)
                 FrameCorner.CornerRadius = UDim.new(0, 8 * scale)
                 FrameCorner.Parent = ToggleFrame
                 
-                -- INNER FRAME untuk background card (full width, dengan padding internal)
+                -- INNER FRAME untuk background card
                 local InnerFrame = Instance.new("Frame")
                 InnerFrame.Name = "InnerFrame"
-                InnerFrame.Size = UDim2.new(1, -4, 1, -4)  -- Kurangi 4px untuk border (2px kiri + 2px kanan)
-                InnerFrame.Position = UDim2.new(0, 2, 0, 2)  -- Offset 2px dari border
+                InnerFrame.Size = UDim2.new(1, -4, 1, -4)
+                InnerFrame.Position = UDim2.new(0, 2, 0, 2)
                 InnerFrame.BackgroundColor3 = theme.ContentCard
                 InnerFrame.BackgroundTransparency = 0
                 InnerFrame.BorderSizePixel = 0
                 InnerFrame.Parent = ToggleFrame
                 
-                -- Rounded corners untuk inner frame (sedikit lebih kecil)
+                -- Rounded corners untuk inner frame
                 local InnerCorner = Instance.new("UICorner")
-                InnerCorner.CornerRadius = UDim.new(0, 6 * scale)  -- Lebih kecil dari outer corner
+                InnerCorner.CornerRadius = UDim.new(0, 6 * scale)
                 InnerCorner.Parent = InnerFrame
                 
-                -- Efek glow tipis (opsional)
+                -- Efek glow tipis
                 local FrameGlow = createGlow(ToggleFrame, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
                 FrameGlow.ImageTransparency = 0.9
                 
-                -- Toggle label (teks menu) di KIRI - FULL HEIGHT
+                -- Toggle label (teks menu) di KIRI
                 local ToggleLabel = Instance.new("TextLabel")
                 ToggleLabel.Name = "ToggleLabel"
-                ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)  -- Full height
-                ToggleLabel.Position = UDim2.new(0, 13 * scale, 0, 0)  -- Padding kiri
+                ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+                ToggleLabel.Position = UDim2.new(0, 13 * scale, 0, 0)
                 ToggleLabel.Text = opts.Text or opts.Name or "Toggle"
                 ToggleLabel.TextColor3 = theme.Text
                 ToggleLabel.BackgroundTransparency = 1
-                ToggleLabel.TextSize = 14 * scale
-                ToggleLabel.Font = Enum.Font.GothamBlack
+                ToggleLabel.TextSize = 13 * scale
+                ToggleLabel.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
                 ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-                ToggleLabel.Parent = InnerFrame  -- Parent ke InnerFrame
+                ToggleLabel.Parent = InnerFrame
                 
-                -- Toggle container di KANAN - SEJAJAR DENGAN TEXT
+                -- Toggle container di KANAN
                 local ToggleContainer = Instance.new("TextButton")
                 ToggleContainer.Name = "ToggleContainer"
-                ToggleContainer.Size = UDim2.new(0, 50 * scale, 0, 26 * scale)  -- Sedikit lebih besar
-                ToggleContainer.Position = UDim2.new(1, -63 * scale, 0.5, -13 * scale)  -- Center vertically
+                ToggleContainer.Size = UDim2.new(0, 50 * scale, 0, 26 * scale)
+                ToggleContainer.Position = UDim2.new(1, -63 * scale, 0.5, -13 * scale)
                 ToggleContainer.Text = ""
                 ToggleContainer.BackgroundColor3 = theme.ToggleOff
                 ToggleContainer.BackgroundTransparency = 0
                 ToggleContainer.BorderSizePixel = 0
                 ToggleContainer.AutoButtonColor = false
-                ToggleContainer.Parent = InnerFrame  -- Parent ke InnerFrame
+                ToggleContainer.Parent = InnerFrame
                 
                 local ContainerCorner = Instance.new("UICorner")
-                ContainerCorner.CornerRadius = UDim.new(0, 13 * scale)  -- Setengah dari tinggi
+                ContainerCorner.CornerRadius = UDim.new(0, 13 * scale)
                 ContainerCorner.Parent = ToggleContainer
                 
                 -- Toggle circle
@@ -859,7 +860,7 @@ function SimpleGUI:CreateWindow(options)
                         tween(ToggleContainer, {BackgroundColor3 = theme.ToggleOn}, 0.2)
                         tween(ToggleCircle, {Position = UDim2.new(1, -24 * scale, 0.5, -11 * scale)}, 0.2)
                         tween(ToggleGlow, {ImageTransparency = 0.5}, 0.2)
-                        tween(ToggleFrame, {BorderColor3 = theme.BorderRed}, 0.2)  -- Border merah penuh saat aktif
+                        tween(ToggleFrame, {BorderColor3 = theme.BorderRed}, 0.2)
                     else
                         tween(ToggleContainer, {BackgroundColor3 = theme.ToggleOff}, 0.2)
                         tween(ToggleCircle, {Position = UDim2.new(0, 2 * scale, 0.5, -11 * scale)}, 0.2)
@@ -955,8 +956,8 @@ function SimpleGUI:CreateWindow(options)
                 SliderLabel.Text = opts.Name or "Slider"
                 SliderLabel.TextColor3 = theme.Text
                 SliderLabel.BackgroundTransparency = 1
-                SliderLabel.TextSize = 14 * scale
-                SliderLabel.Font = Enum.Font.GothamBlack
+                SliderLabel.TextSize = 13 * scale
+                SliderLabel.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
                 SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
                 SliderLabel.Parent = InnerFrame
                 
@@ -969,7 +970,7 @@ function SimpleGUI:CreateWindow(options)
                 ValueLabel.TextColor3 = theme.Accent
                 ValueLabel.BackgroundTransparency = 1
                 ValueLabel.TextSize = 14 * scale
-                ValueLabel.Font = Enum.Font.GothamBlackBlack
+                ValueLabel.Font = Enum.Font.GothamBlack
                 ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
                 ValueLabel.Parent = InnerFrame
                 
@@ -1130,30 +1131,30 @@ function SimpleGUI:CreateWindow(options)
                 InnerCorner.CornerRadius = UDim.new(0, 6 * scale)
                 InnerCorner.Parent = InnerFrame
                 
-                -- Label
+                -- Label di KIRI
                 local DropdownLabel = Instance.new("TextLabel")
                 DropdownLabel.Name = "DropdownLabel"
-                DropdownLabel.Size = UDim2.new(1, -30, 0, 22 * scale)
+                DropdownLabel.Size = UDim2.new(0.4, 0, 0, 22 * scale)
                 DropdownLabel.Position = UDim2.new(0, 13 * scale, 0, 8 * scale)
                 DropdownLabel.Text = opts.Text or opts.Name or "Dropdown"
                 DropdownLabel.TextColor3 = theme.Text
                 DropdownLabel.BackgroundTransparency = 1
-                DropdownLabel.TextSize = 14 * scale
-                DropdownLabel.Font = Enum.Font.GothamBlack
+                DropdownLabel.TextSize = 13 * scale
+                DropdownLabel.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
                 DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
                 DropdownLabel.Parent = InnerFrame
                 
-                -- Main dropdown button
+                -- Dropdown button di KANAN
                 local DropdownButton = Instance.new("TextButton")
                 DropdownButton.Name = "DropdownButton"
-                DropdownButton.Size = UDim2.new(1, -30, 0, 34 * scale)
-                DropdownButton.Position = UDim2.new(0, 13 * scale, 0, 36 * scale)
+                DropdownButton.Size = UDim2.new(0.55, -20, 0, 34 * scale)
+                DropdownButton.Position = UDim2.new(0.45, 10, 0, 8 * scale)
                 DropdownButton.Text = opts.Default or (opts.Options and #opts.Options > 0 and opts.Options[1]) or "Pilih opsi"
                 DropdownButton.TextColor3 = theme.Text
                 DropdownButton.BackgroundColor3 = theme.InputBg
                 DropdownButton.BackgroundTransparency = 0
                 DropdownButton.TextSize = 13 * scale
-                DropdownButton.Font = Enum.Font.GothamBlack
+                DropdownButton.Font = Enum.Font.GothamBlack  -- UBAH KE GOTHAMBLACK
                 DropdownButton.AutoButtonColor = false
                 DropdownButton.Parent = InnerFrame
                 
@@ -1170,14 +1171,14 @@ function SimpleGUI:CreateWindow(options)
                 ArrowLabel.TextColor3 = theme.Accent
                 ArrowLabel.BackgroundTransparency = 1
                 ArrowLabel.TextSize = 12 * scale
-                ArrowLabel.Font = Enum.Font.GothamBlack
+                ArrowLabel.Font = Enum.Font.Gotham
                 ArrowLabel.Parent = DropdownButton
                 
                 -- Dropdown container
                 local DropdownContainer = Instance.new("Frame")
                 DropdownContainer.Name = "DropdownContainer"
                 DropdownContainer.Size = UDim2.new(1, -30, 0, 0)
-                DropdownContainer.Position = UDim2.new(0, 13 * scale, 0, 72 * scale)
+                DropdownContainer.Position = UDim2.new(0, 13 * scale, 0, 44 * scale)
                 DropdownContainer.BackgroundColor3 = theme.InputBgFocus
                 DropdownContainer.BackgroundTransparency = 0
                 DropdownContainer.BorderSizePixel = 0
@@ -1260,7 +1261,7 @@ function SimpleGUI:CreateWindow(options)
                         EmptyLabel.TextColor3 = theme.TextMuted
                         EmptyLabel.BackgroundTransparency = 1
                         EmptyLabel.TextSize = 12 * scale
-                        EmptyLabel.Font = Enum.Font.GothamBlack
+                        EmptyLabel.Font = Enum.Font.Gotham
                         EmptyLabel.Parent = DropdownList
                         return
                     end
@@ -1274,7 +1275,7 @@ function SimpleGUI:CreateWindow(options)
                         ItemButton.BackgroundColor3 = theme.InputBg
                         ItemButton.BackgroundTransparency = 0
                         ItemButton.TextSize = 12 * scale
-                        ItemButton.Font = Enum.Font.GothamBlack
+                        ItemButton.Font = Enum.Font.Gotham  -- Item dropdown tetap pakai Gotham biasa agar lebih terbaca
                         ItemButton.AutoButtonColor = false
                         ItemButton.LayoutOrder = i
                         ItemButton.Parent = DropdownList
@@ -1469,7 +1470,7 @@ function SimpleGUI:CreateWindow(options)
         
         if #self.Tabs == 1 then
             TabButton.BackgroundColor3 = theme.TabActive
-            TabButton.TextColor3 = Color3.new(1, 1, 1)  -- Text putih untuk tab pertama
+            TabButton.TextColor3 = Color3.new(1, 1, 1)
             TabContent.Visible = true
             self.ActiveTab = tabName
         end
@@ -1477,7 +1478,7 @@ function SimpleGUI:CreateWindow(options)
         return tabObj
     end
     
-    -- ===== MINIMIZE FUNCTIONALITY (DIPERBAIKI) =====
+    -- ===== MINIMIZE FUNCTIONALITY =====
     local originalSize = windowData.Size
     local isMinimized = false
     
@@ -1486,21 +1487,18 @@ function SimpleGUI:CreateWindow(options)
     MinimizedIcon.Name = "MinimizedIcon_Bee"
     MinimizedIcon.Size = UDim2.new(0, 48 * scale, 0, 48 * scale)
     MinimizedIcon.Position = UDim2.new(0, 20, 0, 20)
-    MinimizedIcon.Text = "B"  -- UBAH KE "B"
-    MinimizedIcon.TextColor3 = theme.Accent  -- WARNA MERAH
-    MinimizedIcon.BackgroundTransparency = 1  -- BACKGROUND TRANSPARAN
-    MinimizedIcon.TextSize = 32 * scale  -- LEBIH BESAR
-    MinimizedIcon.Font = Enum.Font.GothamBlackBlack
+    MinimizedIcon.Text = "B"
+    MinimizedIcon.TextColor3 = theme.Accent
+    MinimizedIcon.BackgroundTransparency = 1
+    MinimizedIcon.TextSize = 32 * scale
+    MinimizedIcon.Font = Enum.Font.GothamBlack
     MinimizedIcon.Visible = false
     MinimizedIcon.Parent = self.ScreenGui
-    
-    -- HAPUS SEMUA EFEK TAMBAHAN (glow, shadow, corner)
-    -- Biarkan icon hanya berupa teks merah tanpa background
     
     self.MinimizedIcons[windowData.Name] = {
         Icon = MinimizedIcon,
         UpdateTheme = function(self, newTheme)
-            MinimizedIcon.TextColor3 = newTheme.Accent  -- HANYA UPDATE WARNA TEXT
+            MinimizedIcon.TextColor3 = newTheme.Accent
         end
     }
     
