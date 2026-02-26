@@ -178,7 +178,7 @@ function ShopAutoBuy.Init(Dependencies)
     
     -- ===== MEMBUAT UI =====
     
-    -- 1. DROPDOWN
+    -- 1. DROPDOWN (tinggi 40 aja biar pass)
     dropdownRef = Tab:CreateDropdown({
         Name = "SeedDropdown",
         Text = "Pilih Bibit:",
@@ -201,10 +201,10 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 2. FRAME UNTUK JUMLAH BIBIT (BARIS 1)
+    -- 2. FRAME UNTUK JUMLAH BIBIT (TINGGI 40)
     local QuantityFrame = Instance.new("Frame")
     QuantityFrame.Name = "QuantityFrame"
-    QuantityFrame.Size = UDim2.new(0.95, 0, 0, 50)
+    QuantityFrame.Size = UDim2.new(0.95, 0, 0, 40)
     QuantityFrame.BackgroundColor3 = theme.ContentCard
     QuantityFrame.BackgroundTransparency = 0
     QuantityFrame.BorderSizePixel = 2
@@ -212,12 +212,10 @@ function ShopAutoBuy.Init(Dependencies)
     QuantityFrame.LayoutOrder = #Tab.Elements + 1
     QuantityFrame.Parent = Tab.Content
     
-    -- Rounded corners untuk frame
     local QuantityCorner = Instance.new("UICorner")
-    QuantityCorner.CornerRadius = UDim.new(0, 8)
+    QuantityCorner.CornerRadius = UDim.new(0, 6)
     QuantityCorner.Parent = QuantityFrame
     
-    -- Inner frame untuk padding
     local QuantityInner = Instance.new("Frame")
     QuantityInner.Name = "QuantityInner"
     QuantityInner.Size = UDim2.new(1, -4, 1, -4)
@@ -228,18 +226,18 @@ function ShopAutoBuy.Init(Dependencies)
     QuantityInner.Parent = QuantityFrame
     
     local QuantityInnerCorner = Instance.new("UICorner")
-    QuantityInnerCorner.CornerRadius = UDim.new(0, 6)
+    QuantityInnerCorner.CornerRadius = UDim.new(0, 4)
     QuantityInnerCorner.Parent = QuantityInner
     
-    -- Layout horizontal untuk quantity
+    -- Layout horizontal
     local QuantityLayout = Instance.new("UIListLayout")
     QuantityLayout.FillDirection = Enum.FillDirection.Horizontal
-    QuantityLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    QuantityLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
     QuantityLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     QuantityLayout.Padding = UDim.new(0, 10)
     QuantityLayout.Parent = QuantityInner
     
-    -- Label "Jumlah Bibit:"
+    -- Label "Jumlah Bibit:" di KIRI
     local QtyLabelText = Instance.new("TextLabel")
     QtyLabelText.Name = "QtyLabelText"
     QtyLabelText.Size = UDim2.new(0, 100, 0, 30)
@@ -248,24 +246,24 @@ function ShopAutoBuy.Init(Dependencies)
     QtyLabelText.BackgroundTransparency = 1
     QtyLabelText.TextSize = 14
     QtyLabelText.Font = Enum.Font.GothamBold
-    QtyLabelText.TextXAlignment = Enum.TextXAlignment.Right
+    QtyLabelText.TextXAlignment = Enum.TextXAlignment.Left
     QtyLabelText.Parent = QuantityInner
     
     -- QUANTITY CONTROL
     local QtyFrame = Instance.new("Frame")
     QtyFrame.Name = "QtyFrame"
-    QtyFrame.Size = UDim2.new(0, 120, 0, 36)
+    QtyFrame.Size = UDim2.new(0, 120, 0, 32)
     QtyFrame.BackgroundColor3 = theme.InputBg
     QtyFrame.BackgroundTransparency = 0
     QtyFrame.Parent = QuantityInner
     
     local QtyCorner = Instance.new("UICorner")
-    QtyCorner.CornerRadius = UDim.new(0, 6)
+    QtyCorner.CornerRadius = UDim.new(0, 5)
     QtyCorner.Parent = QtyFrame
     
     local QtyIcon = Instance.new("TextLabel")
     QtyIcon.Name = "QtyIcon"
-    QtyIcon.Size = UDim2.new(0, 35, 1, 0)
+    QtyIcon.Size = UDim2.new(0, 32, 1, 0)
     QtyIcon.Text = "🔢"
     QtyIcon.TextColor3 = theme.Accent
     QtyIcon.BackgroundTransparency = 1
@@ -275,8 +273,8 @@ function ShopAutoBuy.Init(Dependencies)
     
     local QtyBox = Instance.new("TextBox")
     QtyBox.Name = "QtyBox"
-    QtyBox.Size = UDim2.new(1, -35, 1, 0)
-    QtyBox.Position = UDim2.new(0, 35, 0, 0)
+    QtyBox.Size = UDim2.new(1, -32, 1, 0)
+    QtyBox.Position = UDim2.new(0, 32, 0, 0)
     QtyBox.Text = tostring(buyQuantity)
     QtyBox.TextColor3 = theme.Text
     QtyBox.BackgroundTransparency = 1
@@ -285,10 +283,10 @@ function ShopAutoBuy.Init(Dependencies)
     QtyBox.ClearTextOnFocus = false
     QtyBox.Parent = QtyFrame
     
-    -- 3. FRAME UNTUK DELAY (BARIS 2)
+    -- 3. FRAME UNTUK DELAY (TINGGI 40)
     local DelayFrame2 = Instance.new("Frame")
     DelayFrame2.Name = "DelayFrame2"
-    DelayFrame2.Size = UDim2.new(0.95, 0, 0, 50)
+    DelayFrame2.Size = UDim2.new(0.95, 0, 0, 40)
     DelayFrame2.BackgroundColor3 = theme.ContentCard
     DelayFrame2.BackgroundTransparency = 0
     DelayFrame2.BorderSizePixel = 2
@@ -296,12 +294,10 @@ function ShopAutoBuy.Init(Dependencies)
     DelayFrame2.LayoutOrder = #Tab.Elements + 1
     DelayFrame2.Parent = Tab.Content
     
-    -- Rounded corners untuk frame
     local DelayCorner2 = Instance.new("UICorner")
-    DelayCorner2.CornerRadius = UDim.new(0, 8)
+    DelayCorner2.CornerRadius = UDim.new(0, 6)
     DelayCorner2.Parent = DelayFrame2
     
-    -- Inner frame untuk padding
     local DelayInner2 = Instance.new("Frame")
     DelayInner2.Name = "DelayInner2"
     DelayInner2.Size = UDim2.new(1, -4, 1, -4)
@@ -312,18 +308,17 @@ function ShopAutoBuy.Init(Dependencies)
     DelayInner2.Parent = DelayFrame2
     
     local DelayInnerCorner2 = Instance.new("UICorner")
-    DelayInnerCorner2.CornerRadius = UDim.new(0, 6)
+    DelayInnerCorner2.CornerRadius = UDim.new(0, 4)
     DelayInnerCorner2.Parent = DelayInner2
     
-    -- Layout horizontal untuk delay
     local DelayLayout2 = Instance.new("UIListLayout")
     DelayLayout2.FillDirection = Enum.FillDirection.Horizontal
-    DelayLayout2.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    DelayLayout2.HorizontalAlignment = Enum.HorizontalAlignment.Left
     DelayLayout2.VerticalAlignment = Enum.VerticalAlignment.Center
     DelayLayout2.Padding = UDim.new(0, 10)
     DelayLayout2.Parent = DelayInner2
     
-    -- Label "Delay (detik):"
+    -- Label "Delay (detik):" di KIRI
     local DelayLabelText = Instance.new("TextLabel")
     DelayLabelText.Name = "DelayLabelText"
     DelayLabelText.Size = UDim2.new(0, 100, 0, 30)
@@ -332,24 +327,24 @@ function ShopAutoBuy.Init(Dependencies)
     DelayLabelText.BackgroundTransparency = 1
     DelayLabelText.TextSize = 14
     DelayLabelText.Font = Enum.Font.GothamBold
-    DelayLabelText.TextXAlignment = Enum.TextXAlignment.Right
+    DelayLabelText.TextXAlignment = Enum.TextXAlignment.Left
     DelayLabelText.Parent = DelayInner2
     
     -- DELAY CONTROL
     local DelayFrame = Instance.new("Frame")
     DelayFrame.Name = "DelayFrame"
-    DelayFrame.Size = UDim2.new(0, 120, 0, 36)
+    DelayFrame.Size = UDim2.new(0, 120, 0, 32)
     DelayFrame.BackgroundColor3 = theme.InputBg
     DelayFrame.BackgroundTransparency = 0
     DelayFrame.Parent = DelayInner2
     
     local DelayCorner = Instance.new("UICorner")
-    DelayCorner.CornerRadius = UDim.new(0, 6)
+    DelayCorner.CornerRadius = UDim.new(0, 5)
     DelayCorner.Parent = DelayFrame
     
     local DelayIcon = Instance.new("TextLabel")
     DelayIcon.Name = "DelayIcon"
-    DelayIcon.Size = UDim2.new(0, 35, 1, 0)
+    DelayIcon.Size = UDim2.new(0, 32, 1, 0)
     DelayIcon.Text = "⏱️"
     DelayIcon.TextColor3 = theme.Accent
     DelayIcon.BackgroundTransparency = 1
@@ -359,8 +354,8 @@ function ShopAutoBuy.Init(Dependencies)
     
     local DelayBox = Instance.new("TextBox")
     DelayBox.Name = "DelayBox"
-    DelayBox.Size = UDim2.new(1, -35, 1, 0)
-    DelayBox.Position = UDim2.new(0, 35, 0, 0)
+    DelayBox.Size = UDim2.new(1, -32, 1, 0)
+    DelayBox.Position = UDim2.new(0, 32, 0, 0)
     DelayBox.Text = tostring(buyDelay) .. "s"
     DelayBox.TextColor3 = theme.Text
     DelayBox.BackgroundTransparency = 1
@@ -369,7 +364,7 @@ function ShopAutoBuy.Init(Dependencies)
     DelayBox.ClearTextOnFocus = false
     DelayBox.Parent = DelayFrame
     
-    -- Validasi Quantity
+    -- Validasi
     QtyBox.FocusLost:Connect(function()
         local value = tonumber(QtyBox.Text)
         if value and value >= 1 and value <= 99 then
@@ -385,7 +380,6 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
-    -- Validasi Delay
     DelayBox.FocusLost:Connect(function()
         local text = DelayBox.Text:gsub("s", "")
         local value = tonumber(text)
@@ -406,10 +400,10 @@ function ShopAutoBuy.Init(Dependencies)
         end
     end)
     
-    -- 4. FRAME UNTUK BELI SEKARANG (BARIS 3) - DENGAN TOGGLE
+    -- 4. FRAME BELI SEKARANG (TINGGI 40)
     local BuyFrame = Instance.new("Frame")
     BuyFrame.Name = "BuyFrame"
-    BuyFrame.Size = UDim2.new(0.95, 0, 0, 60)
+    BuyFrame.Size = UDim2.new(0.95, 0, 0, 40)
     BuyFrame.BackgroundColor3 = theme.ContentCard
     BuyFrame.BackgroundTransparency = 0
     BuyFrame.BorderSizePixel = 2
@@ -418,7 +412,7 @@ function ShopAutoBuy.Init(Dependencies)
     BuyFrame.Parent = Tab.Content
     
     local BuyCorner = Instance.new("UICorner")
-    BuyCorner.CornerRadius = UDim.new(0, 8)
+    BuyCorner.CornerRadius = UDim.new(0, 6)
     BuyCorner.Parent = BuyFrame
     
     local BuyInner = Instance.new("Frame")
@@ -431,18 +425,17 @@ function ShopAutoBuy.Init(Dependencies)
     BuyInner.Parent = BuyFrame
     
     local BuyInnerCorner = Instance.new("UICorner")
-    BuyInnerCorner.CornerRadius = UDim.new(0, 6)
+    BuyInnerCorner.CornerRadius = UDim.new(0, 4)
     BuyInnerCorner.Parent = BuyInner
     
-    -- Toggle untuk Beli Sekarang (sekali pakai)
+    -- Toggle Beli Sekarang
     buyToggleRef = Tab:CreateToggle({
         Name = "BuyNowToggle",
-        Text = "Beli Sekarang",  -- Teks di kiri, toggle di kanan
+        Text = "Beli Sekarang",
         CurrentValue = false,
         Callback = function(state)
             if state then
                 buySeed(selectedSeed, buyQuantity, false)
-                -- Kembalikan ke false setelah beli
                 task.wait(0.1)
                 if buyToggleRef and buyToggleRef.SetValue then
                     buyToggleRef:SetValue(false)
@@ -451,16 +444,15 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Reparent toggle ke BuyInner
     if buyToggleRef and buyToggleRef.Frame then
         buyToggleRef.Frame.Parent = BuyInner
-        buyToggleRef.Frame.Size = UDim2.new(1, -20, 0, 40)
+        buyToggleRef.Frame.Size = UDim2.new(1, -10, 0, 32)
     end
     
-    -- 5. FRAME UNTUK AUTO BUY (BARIS 4) - DENGAN TOGGLE
+    -- 5. FRAME AUTO BUY (TINGGI 40)
     local AutoFrame = Instance.new("Frame")
     AutoFrame.Name = "AutoFrame"
-    AutoFrame.Size = UDim2.new(0.95, 0, 0, 60)
+    AutoFrame.Size = UDim2.new(0.95, 0, 0, 40)
     AutoFrame.BackgroundColor3 = theme.ContentCard
     AutoFrame.BackgroundTransparency = 0
     AutoFrame.BorderSizePixel = 2
@@ -469,7 +461,7 @@ function ShopAutoBuy.Init(Dependencies)
     AutoFrame.Parent = Tab.Content
     
     local AutoCorner = Instance.new("UICorner")
-    AutoCorner.CornerRadius = UDim.new(0, 8)
+    AutoCorner.CornerRadius = UDim.new(0, 6)
     AutoCorner.Parent = AutoFrame
     
     local AutoInner = Instance.new("Frame")
@@ -482,20 +474,19 @@ function ShopAutoBuy.Init(Dependencies)
     AutoInner.Parent = AutoFrame
     
     local AutoInnerCorner = Instance.new("UICorner")
-    AutoInnerCorner.CornerRadius = UDim.new(0, 6)
+    AutoInnerCorner.CornerRadius = UDim.new(0, 4)
     AutoInnerCorner.Parent = AutoInner
     
     -- Toggle Auto Buy
     autoToggleRef = Tab:CreateToggle({
         Name = "AutoBuyToggle",
-        Text = "Auto Buy",  -- Teks di kiri, toggle di kanan
+        Text = "Auto Buy",
         CurrentValue = autoBuyEnabled,
         Callback = function(state)
             if state then
                 if checkRemote() then
                     startAutoBuy()
                 else
-                    -- Jika gagal, kembalikan toggle ke false
                     if autoToggleRef and autoToggleRef.SetValue then
                         autoToggleRef:SetValue(false)
                     end
@@ -506,10 +497,9 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Reparent toggle ke AutoInner
     if autoToggleRef and autoToggleRef.Frame then
         autoToggleRef.Frame.Parent = AutoInner
-        autoToggleRef.Frame.Size = UDim2.new(1, -20, 0, 40)
+        autoToggleRef.Frame.Size = UDim2.new(1, -10, 0, 32)
     end
     
     -- 6. FOOTER
