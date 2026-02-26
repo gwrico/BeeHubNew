@@ -1,7 +1,7 @@
 -- ==============================================
--- 🎨 SIMPLEGUI v8.0 - NEO FUTURISTIC EDITION
+-- 🎨 SIMPLEGUI v8.0 - Bee FUTURISTIC EDITION
 -- ==============================================
---print("🔧 Loading SimpleGUI v8.0 - Neo Futuristic Edition...")
+--print("🔧 Loading SimpleGUI v8.0 - Bee Futuristic Edition...")
 
 local SimpleGUI = {}
 SimpleGUI.__index = SimpleGUI
@@ -12,15 +12,15 @@ local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- 🔥 NEO FUTURISTIC COLOR SCHEME - Red & Black
+-- 🔥 Bee FUTURISTIC COLOR SCHEME - Red & Black
 SimpleGUI.Themes = {
-    NEO = {
-        Name = "Neo Futuristic",
+    Bee = {
+        Name = "Bee Futuristic",
         
-        -- Warna dasar Neo (Hitam & Merah)
+        -- Warna dasar Bee (Hitam & Merah)
         Primary = Color3.fromRGB(10, 10, 10),        -- Hitam pekat
         Secondary = Color3.fromRGB(20, 20, 20),       -- Hitam lebih terang
-        Accent = Color3.fromRGB(255, 40, 40),         -- Merah neon terang
+        Accent = Color3.fromRGB(255, 40, 40),         -- Merah Been terang
         AccentDark = Color3.fromRGB(180, 20, 20),      -- Merah gelap
         AccentGlow = Color3.fromRGB(255, 60, 60),      -- Merah untuk efek glow
         
@@ -82,12 +82,12 @@ SimpleGUI.Themes = {
 }
 
 function SimpleGUI.new()
-    --print("🚀 Initializing Neo Futuristic Edition...")
+    --print("🚀 Initializing Bee Futuristic Edition...")
     
     local self = setmetatable({}, SimpleGUI)
     
     self.ScreenGui = Instance.new("ScreenGui")
-    self.ScreenGui.Name = "NeoHub_" .. math.random(1000, 9999)
+    self.ScreenGui.Name = "BeeHub_" .. math.random(1000, 9999)
     self.ScreenGui.DisplayOrder = 99999
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -102,10 +102,10 @@ function SimpleGUI.new()
     end
     
     self.Windows = {}
-    self.CurrentTheme = "NEO"
+    self.CurrentTheme = "Bee"
     self.MinimizedIcons = {}
     
-    --print("✅ Neo Futuristic Edition initialized!")
+    --print("✅ Bee Futuristic Edition initialized!")
     return self
 end
 
@@ -168,14 +168,14 @@ local function addScanlines(frame)
     task.spawn(animateScanline)
 end
 
--- Create window dengan tampilan Neo Futuristic
+-- Create window dengan tampilan Bee Futuristic
 function SimpleGUI:CreateWindow(options)
     local opts = options or {}
     local isMobile = UserInputService.TouchEnabled
     local scale = isMobile and 0.85 or 1.0
     
     local windowData = {
-        Name = opts.Name or "NEO HUB",
+        Name = opts.Name or "BEE HUB",
         SubName = opts.SubName or "Futuristic Edition | system.online",
         Size = opts.Size or UDim2.new(0, 750 * scale, 0, 520 * scale),
         Position = opts.Position or UDim2.new(0.5, -375 * scale, 0.5, -260 * scale),
@@ -189,7 +189,7 @@ function SimpleGUI:CreateWindow(options)
     
     -- ===== MAIN WINDOW FRAME =====
     local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "NeoHub_Window"
+    MainFrame.Name = "BeeHub_Window"
     MainFrame.Size = windowData.Size
     MainFrame.Position = windowData.Position
     MainFrame.BackgroundColor3 = theme.WindowBg
@@ -1386,7 +1386,7 @@ function SimpleGUI:CreateWindow(options)
     
     -- Minimized icon dengan efek futuristik
     local MinimizedIcon = Instance.new("TextButton")
-    MinimizedIcon.Name = "MinimizedIcon_Neo"
+    MinimizedIcon.Name = "MinimizedIcon_Bee"
     MinimizedIcon.Size = UDim2.new(0, 48 * scale, 0, 48 * scale)
     MinimizedIcon.Position = UDim2.new(0, 20, 0, 20)
     MinimizedIcon.Text = "N"
@@ -1547,7 +1547,7 @@ function SimpleGUI:CreateWindow(options)
         end
     end)
     
-    --print("✅ Created Neo Futuristic Edition window!")
+    --print("✅ Created Bee Futuristic Edition window!")
     return windowObj
 end
 
@@ -1595,8 +1595,8 @@ end
 
 -- Tambahkan method untuk mendapatkan versi
 function SimpleGUI:GetVersion()
-    return "8.0 - Neo Futuristic Edition"
+    return "8.0 - Bee Futuristic Edition"
 end
 
---print("🎉 SimpleGUI v8.0 - Neo Futuristic Edition loaded!")
+--print("🎉 SimpleGUI v8.0 - Bee Futuristic Edition loaded!")
 return SimpleGUI

@@ -21,9 +21,9 @@ end
 
 local GUI = SimpleGUI.new()
 
--- Create main window
+-- Create main window dengan nama BEEHUB (bukan NEO HUB)
 local Window = GUI:CreateWindow({
-    Name = "⚡ NEO HUB v4.0 - Futuristic Edition",
+    Name = "⚡ BEEHUB v4.0 - Futuristic Edition",  -- ← Kembali ke BEEHUB
     Size = UDim2.new(0, 700, 0, 500)
 })
 
@@ -136,7 +136,7 @@ task.spawn(function()
     local loadTime = tick() - startTime
     
     Bdev:Notify({
-        Title = "NEO HUB v4.0",
+        Title = "BEEHUB v4.0",  -- ← Notifikasi juga BEEHUB
         Content = "Loaded successfully!",
         Duration = 3
     })
