@@ -462,7 +462,7 @@ function ShopAutoBuy.Init(Dependencies)
     local StopBtn = Instance.new("TextButton")
     StopBtn.Name = "StopBtn"
     StopBtn.Size = UDim2.new(0, 50, 0, 40)
-    StopBtn.Text = "✕"
+    StopBtn.Text = "⏹ STOP"
     StopBtn.TextColor3 = theme.Error or Color3.fromRGB(255, 70, 70)
     StopBtn.BackgroundColor3 = theme.Button
     StopBtn.BackgroundTransparency = 0
