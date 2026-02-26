@@ -20,7 +20,7 @@ SimpleGUI.Themes = {
         -- Warna dasar Bee (Hitam & Merah)
         Primary = Color3.fromRGB(10, 10, 10),        -- Hitam pekat
         Secondary = Color3.fromRGB(20, 20, 20),       -- Hitam lebih terang
-        Accent = Color3.fromRGB(255, 40, 40),         -- Merah Been terang
+        Accent = Color3.fromRGB(255, 40, 40),         -- Merah terang
         AccentDark = Color3.fromRGB(180, 20, 20),      -- Merah gelap
         AccentGlow = Color3.fromRGB(255, 60, 60),      -- Merah untuk efek glow
         
@@ -35,8 +35,8 @@ SimpleGUI.Themes = {
         
         -- Border & Effects
         Border = Color3.fromRGB(40, 40, 45),
-        BorderLight = Color3.fromRGB(255, 40, 40, 0.3), -- Merah transparan untuk border
-        BorderGlow = Color3.fromRGB(255, 40, 40, 0.3),  -- Glow merah
+        BorderLight = Color3.fromRGB(70, 70, 80),
+        BorderRed = Color3.fromRGB(255, 40, 40),       -- Border merah penuh
         
         Hover = Color3.fromRGB(255, 40, 40, 0.2),       -- Merah transparan untuk hover
         Active = Color3.fromRGB(255, 40, 40),           -- Merah untuk active
@@ -52,6 +52,7 @@ SimpleGUI.Themes = {
         
         ContentBg = Color3.fromRGB(8, 8, 12),
         ContentBgLight = Color3.fromRGB(15, 15, 20),    -- Untuk background card
+        ContentCard = Color3.fromRGB(20, 20, 25),       -- Background card yang lebih terang
         
         Button = Color3.fromRGB(25, 25, 32),
         ButtonHover = Color3.fromRGB(45, 45, 55),
@@ -474,21 +475,21 @@ function SimpleGUI:CreateWindow(options)
     ContentContainer.Parent = ContentFrame
     
     local ContentList = Instance.new("UIListLayout")
-    ContentList.Padding = UDim.new(0, 12 * scale)
+    ContentList.Padding = UDim.new(0, 10 * scale)
     ContentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     ContentList.SortOrder = Enum.SortOrder.LayoutOrder
     ContentList.Parent = ContentContainer
     
     local ContentPadding = Instance.new("UIPadding")
-    ContentPadding.PaddingLeft = UDim.new(0, 20 * scale)
-    ContentPadding.PaddingRight = UDim.new(0, 20 * scale)
-    ContentPadding.PaddingTop = UDim.new(0, 20 * scale)
-    ContentPadding.PaddingBottom = UDim.new(0, 20 * scale)
+    ContentPadding.PaddingLeft = UDim.new(0, 15 * scale)
+    ContentPadding.PaddingRight = UDim.new(0, 15 * scale)
+    ContentPadding.PaddingTop = UDim.new(0, 15 * scale)
+    ContentPadding.PaddingBottom = UDim.new(0, 15 * scale)
     ContentPadding.Parent = ContentContainer
     
     ContentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        ContentContainer.Size = UDim2.new(1, 0, 0, ContentList.AbsoluteContentSize.Y + 40 * scale)
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentList.AbsoluteContentSize.Y + 40 * scale)
+        ContentContainer.Size = UDim2.new(1, 0, 0, ContentList.AbsoluteContentSize.Y + 30 * scale)
+        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentList.AbsoluteContentSize.Y + 30 * scale)
     end)
     
     -- ===== SECTION HEADER =====
@@ -620,7 +621,7 @@ function SimpleGUI:CreateWindow(options)
         TabContent.Parent = ContentContainer
         
         local TabLayout = Instance.new("UIListLayout")
-        TabLayout.Padding = UDim.new(0, 12 * scale)
+        TabLayout.Padding = UDim.new(0, 10 * scale)
         TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
         TabLayout.Parent = TabContent
@@ -763,18 +764,18 @@ function SimpleGUI:CreateWindow(options)
                 return Label
             end,
             
-            -- ===== CREATE TOGGLE DENGAN BORDER (YANG DIPERBARUI) =====
+            -- ===== CREATE TOGGLE DENGAN BORDER FULL (YANG DIPERBARUI) =====
             CreateToggle = function(self, options)
                 local opts = options or {}
                 local scale = windowData.Scale
                 
-                -- Main container dengan border
+                -- Main container dengan border FULL
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Name = opts.Name or "Toggle_" .. #self.Elements + 1
-                ToggleFrame.Size = UDim2.new(0.95, 0, 0, 44 * scale)  -- Lebih tinggi sedikit
-                ToggleFrame.BackgroundColor3 = theme.ContentBgLight
+                ToggleFrame.Size = UDim2.new(0.95, 0, 0, 46 * scale)  -- Tinggi konsisten
+                ToggleFrame.BackgroundColor3 = theme.ContentCard
                 ToggleFrame.BackgroundTransparency = 0
-                ToggleFrame.BorderSizePixel = 1
+                ToggleFrame.BorderSizePixel = 2  -- Border lebih tebal
                 ToggleFrame.BorderColor3 = theme.BorderLight
                 ToggleFrame.LayoutOrder = #self.Elements + 1
                 ToggleFrame.Parent = TabContent
@@ -784,28 +785,28 @@ function SimpleGUI:CreateWindow(options)
                 FrameCorner.CornerRadius = UDim.new(0, 8 * scale)
                 FrameCorner.Parent = ToggleFrame
                 
-                -- Efek glow tipis di border (opsional)
-                local FrameGlow = createGlow(ToggleFrame, theme.AccentGlow, UDim2.new(1, 6, 1, 6))
-                FrameGlow.ImageTransparency = 0.8
+                -- Efek glow tipis (opsional)
+                local FrameGlow = createGlow(ToggleFrame, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
+                FrameGlow.ImageTransparency = 0.9
                 
-                -- Toggle label (teks menu) di KIRI
+                -- Toggle label (teks menu) di KIRI - FULL HEIGHT
                 local ToggleLabel = Instance.new("TextLabel")
                 ToggleLabel.Name = "ToggleLabel"
-                ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
-                ToggleLabel.Position = UDim2.new(0, 12 * scale, 0, 0)  -- Beri padding kiri
+                ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)  -- Full height
+                ToggleLabel.Position = UDim2.new(0, 15 * scale, 0, 0)  -- Padding kiri
                 ToggleLabel.Text = opts.Text or opts.Name or "Toggle"
                 ToggleLabel.TextColor3 = theme.Text
                 ToggleLabel.BackgroundTransparency = 1
-                ToggleLabel.TextSize = 13 * scale
+                ToggleLabel.TextSize = 14 * scale
                 ToggleLabel.Font = Enum.Font.Gotham
                 ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
                 ToggleLabel.Parent = ToggleFrame
                 
-                -- Toggle container di KANAN
+                -- Toggle container di KANAN - SEJAJAR DENGAN TEXT
                 local ToggleContainer = Instance.new("TextButton")
                 ToggleContainer.Name = "ToggleContainer"
-                ToggleContainer.Size = UDim2.new(0, 48 * scale, 0, 24 * scale)
-                ToggleContainer.Position = UDim2.new(1, -58 * scale, 0.5, -12 * scale)
+                ToggleContainer.Size = UDim2.new(0, 50 * scale, 0, 26 * scale)  -- Sedikit lebih besar
+                ToggleContainer.Position = UDim2.new(1, -65 * scale, 0.5, -13 * scale)  -- Center vertically
                 ToggleContainer.Text = ""
                 ToggleContainer.BackgroundColor3 = theme.ToggleOff
                 ToggleContainer.BackgroundTransparency = 0
@@ -814,14 +815,14 @@ function SimpleGUI:CreateWindow(options)
                 ToggleContainer.Parent = ToggleFrame
                 
                 local ContainerCorner = Instance.new("UICorner")
-                ContainerCorner.CornerRadius = UDim.new(0, 12 * scale)
+                ContainerCorner.CornerRadius = UDim.new(0, 13 * scale)  -- Setengah dari tinggi
                 ContainerCorner.Parent = ToggleContainer
                 
                 -- Toggle circle
                 local ToggleCircle = Instance.new("Frame")
                 ToggleCircle.Name = "ToggleCircle"
-                ToggleCircle.Size = UDim2.new(0, 20 * scale, 0, 20 * scale)
-                ToggleCircle.Position = UDim2.new(0, 2 * scale, 0.5, -10 * scale)
+                ToggleCircle.Size = UDim2.new(0, 22 * scale, 0, 22 * scale)
+                ToggleCircle.Position = UDim2.new(0, 2 * scale, 0.5, -11 * scale)
                 ToggleCircle.BackgroundColor3 = theme.ToggleCircle
                 ToggleCircle.BackgroundTransparency = 0
                 ToggleCircle.BorderSizePixel = 0
@@ -832,7 +833,7 @@ function SimpleGUI:CreateWindow(options)
                 CircleCorner.Parent = ToggleCircle
                 
                 -- Glow effect untuk toggle container
-                local ToggleGlow = createGlow(ToggleContainer, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
+                local ToggleGlow = createGlow(ToggleContainer, theme.AccentGlow, UDim2.new(1, 10, 1, 10))
                 ToggleGlow.ImageTransparency = 1
                 
                 -- Toggle state
@@ -841,12 +842,12 @@ function SimpleGUI:CreateWindow(options)
                 local function updateToggle()
                     if isToggled then
                         tween(ToggleContainer, {BackgroundColor3 = theme.ToggleOn}, 0.2)
-                        tween(ToggleCircle, {Position = UDim2.new(1, -22 * scale, 0.5, -10 * scale)}, 0.2)
+                        tween(ToggleCircle, {Position = UDim2.new(1, -24 * scale, 0.5, -11 * scale)}, 0.2)
                         tween(ToggleGlow, {ImageTransparency = 0.5}, 0.2)
-                        tween(ToggleFrame, {BorderColor3 = theme.Accent}, 0.2)  -- Border berubah warna saat aktif
+                        tween(ToggleFrame, {BorderColor3 = theme.BorderRed}, 0.2)  -- Border merah penuh saat aktif
                     else
                         tween(ToggleContainer, {BackgroundColor3 = theme.ToggleOff}, 0.2)
-                        tween(ToggleCircle, {Position = UDim2.new(0, 2 * scale, 0.5, -10 * scale)}, 0.2)
+                        tween(ToggleCircle, {Position = UDim2.new(0, 2 * scale, 0.5, -11 * scale)}, 0.2)
                         tween(ToggleGlow, {ImageTransparency = 1}, 0.2)
                         tween(ToggleFrame, {BorderColor3 = theme.BorderLight}, 0.2)
                     end
@@ -880,7 +881,7 @@ function SimpleGUI:CreateWindow(options)
                 
                 ToggleFrame.MouseLeave:Connect(function()
                     if not isMobile then
-                        tween(ToggleFrame, {BackgroundColor3 = theme.ContentBgLight}, 0.15)
+                        tween(ToggleFrame, {BackgroundColor3 = theme.ContentCard}, 0.15)
                     end
                 end)
                 
@@ -906,18 +907,26 @@ function SimpleGUI:CreateWindow(options)
                 local SliderFrame = Instance.new("Frame")
                 SliderFrame.Name = opts.Name or "Slider_" .. #self.Elements + 1
                 SliderFrame.Size = UDim2.new(0.95, 0, 0, 65 * scale)
-                SliderFrame.BackgroundTransparency = 1
+                SliderFrame.BackgroundColor3 = theme.ContentCard
+                SliderFrame.BackgroundTransparency = 0
+                SliderFrame.BorderSizePixel = 2
+                SliderFrame.BorderColor3 = theme.BorderLight
                 SliderFrame.LayoutOrder = #self.Elements + 1
                 SliderFrame.Parent = TabContent
+                
+                local FrameCorner = Instance.new("UICorner")
+                FrameCorner.CornerRadius = UDim.new(0, 8 * scale)
+                FrameCorner.Parent = SliderFrame
                 
                 -- Label
                 local SliderLabel = Instance.new("TextLabel")
                 SliderLabel.Name = "SliderLabel"
                 SliderLabel.Size = UDim2.new(1, -50, 0, 22 * scale)
+                SliderLabel.Position = UDim2.new(0, 15 * scale, 0, 8 * scale)
                 SliderLabel.Text = opts.Name or "Slider"
                 SliderLabel.TextColor3 = theme.Text
                 SliderLabel.BackgroundTransparency = 1
-                SliderLabel.TextSize = 13 * scale
+                SliderLabel.TextSize = 14 * scale
                 SliderLabel.Font = Enum.Font.Gotham
                 SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
                 SliderLabel.Parent = SliderFrame
@@ -926,7 +935,7 @@ function SimpleGUI:CreateWindow(options)
                 local ValueLabel = Instance.new("TextLabel")
                 ValueLabel.Name = "ValueLabel"
                 ValueLabel.Size = UDim2.new(0, 45, 0, 22 * scale)
-                ValueLabel.Position = UDim2.new(1, -45, 0, 0)
+                ValueLabel.Position = UDim2.new(1, -60 * scale, 0, 8 * scale)
                 ValueLabel.Text = tostring(opts.CurrentValue or (opts.Range and opts.Range[1]) or 50)
                 ValueLabel.TextColor3 = theme.Accent  -- Merah untuk value
                 ValueLabel.BackgroundTransparency = 1
@@ -938,8 +947,8 @@ function SimpleGUI:CreateWindow(options)
                 -- Slider track
                 local SliderTrack = Instance.new("Frame")
                 SliderTrack.Name = "SliderTrack"
-                SliderTrack.Size = UDim2.new(1, 0, 0, 22 * scale)
-                SliderTrack.Position = UDim2.new(0, 0, 0, 28 * scale)
+                SliderTrack.Size = UDim2.new(1, -30, 0, 22 * scale)
+                SliderTrack.Position = UDim2.new(0, 15 * scale, 0, 35 * scale)
                 SliderTrack.BackgroundColor3 = theme.SliderTrack
                 SliderTrack.BackgroundTransparency = 0
                 SliderTrack.BorderSizePixel = 0
@@ -965,8 +974,8 @@ function SimpleGUI:CreateWindow(options)
                 -- Slider thumb dengan glow
                 local SliderThumb = Instance.new("TextButton")
                 SliderThumb.Name = "SliderThumb"
-                SliderThumb.Size = UDim2.new(0, 24 * scale, 0, 24 * scale)
-                SliderThumb.Position = UDim2.new(0, -12 * scale, 0.5, -12 * scale)
+                SliderThumb.Size = UDim2.new(0, 26 * scale, 0, 26 * scale)
+                SliderThumb.Position = UDim2.new(0, -13 * scale, 0.5, -13 * scale)
                 SliderThumb.Text = ""
                 SliderThumb.BackgroundColor3 = theme.SliderThumb
                 SliderThumb.BackgroundTransparency = 0
@@ -977,7 +986,7 @@ function SimpleGUI:CreateWindow(options)
                 ThumbCorner.CornerRadius = UDim.new(0.5, 0)
                 ThumbCorner.Parent = SliderThumb
                 
-                local ThumbGlow = createGlow(SliderThumb, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
+                local ThumbGlow = createGlow(SliderThumb, theme.AccentGlow, UDim2.new(1, 10, 1, 10))
                 ThumbGlow.ImageTransparency = 0.7
                 
                 -- Slider variables
@@ -997,7 +1006,7 @@ function SimpleGUI:CreateWindow(options)
                     local fillWidth = math.clamp(percentage, 0, 1)
                     
                     SliderFill.Size = UDim2.new(fillWidth, 0, 1, 0)
-                    SliderThumb.Position = UDim2.new(fillWidth, -12 * scale, 0.5, -12 * scale)
+                    SliderThumb.Position = UDim2.new(fillWidth, -13 * scale, 0.5, -13 * scale)
                     ValueLabel.Text = tostring(currentValue)
                     
                     if opts.Callback then
@@ -1009,7 +1018,7 @@ function SimpleGUI:CreateWindow(options)
                 
                 SliderThumb.MouseButton1Down:Connect(function()
                     isDragging = true
-                    tween(SliderThumb, {Size = UDim2.new(0, 28 * scale, 0, 28 * scale)}, 0.1)
+                    tween(SliderThumb, {Size = UDim2.new(0, 30 * scale, 0, 30 * scale)}, 0.1)
                     tween(ThumbGlow, {ImageTransparency = 0.4}, 0.1)
                 end)
                 
@@ -1030,7 +1039,7 @@ function SimpleGUI:CreateWindow(options)
                 UserInputService.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
                         isDragging = false
-                        tween(SliderThumb, {Size = UDim2.new(0, 24 * scale, 0, 24 * scale)}, 0.1)
+                        tween(SliderThumb, {Size = UDim2.new(0, 26 * scale, 0, 26 * scale)}, 0.1)
                         tween(ThumbGlow, {ImageTransparency = 0.7}, 0.1)
                     end
                 end)
@@ -1061,25 +1070,32 @@ function SimpleGUI:CreateWindow(options)
             end,
             
             CreateDropdown = function(self, options)
-                -- Sama seperti sebelumnya, hanya dengan warna merah
                 local opts = options or {}
                 local scale = windowData.Scale
                 
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Name = opts.Name or "Dropdown_" .. #self.Elements + 1
-                DropdownFrame.Size = UDim2.new(0.95, 0, 0, 40 * scale)
-                DropdownFrame.BackgroundTransparency = 1
+                DropdownFrame.Size = UDim2.new(0.95, 0, 0, 70 * scale)
+                DropdownFrame.BackgroundColor3 = theme.ContentCard
+                DropdownFrame.BackgroundTransparency = 0
+                DropdownFrame.BorderSizePixel = 2
+                DropdownFrame.BorderColor3 = theme.BorderLight
                 DropdownFrame.LayoutOrder = #self.Elements + 1
                 DropdownFrame.Parent = TabContent
+                
+                local FrameCorner = Instance.new("UICorner")
+                FrameCorner.CornerRadius = UDim.new(0, 8 * scale)
+                FrameCorner.Parent = DropdownFrame
                 
                 -- Label
                 local DropdownLabel = Instance.new("TextLabel")
                 DropdownLabel.Name = "DropdownLabel"
                 DropdownLabel.Size = UDim2.new(1, -30, 0, 22 * scale)
+                DropdownLabel.Position = UDim2.new(0, 15 * scale, 0, 8 * scale)
                 DropdownLabel.Text = opts.Text or opts.Name or "Dropdown"
                 DropdownLabel.TextColor3 = theme.Text
                 DropdownLabel.BackgroundTransparency = 1
-                DropdownLabel.TextSize = 13 * scale
+                DropdownLabel.TextSize = 14 * scale
                 DropdownLabel.Font = Enum.Font.Gotham
                 DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
                 DropdownLabel.Parent = DropdownFrame
@@ -1087,8 +1103,8 @@ function SimpleGUI:CreateWindow(options)
                 -- Main dropdown button
                 local DropdownButton = Instance.new("TextButton")
                 DropdownButton.Name = "DropdownButton"
-                DropdownButton.Size = UDim2.new(1, 0, 0, 32 * scale)
-                DropdownButton.Position = UDim2.new(0, 0, 0, 24 * scale)
+                DropdownButton.Size = UDim2.new(1, -30, 0, 34 * scale)
+                DropdownButton.Position = UDim2.new(0, 15 * scale, 0, 32 * scale)
                 DropdownButton.Text = opts.Default or (opts.Options and #opts.Options > 0 and opts.Options[1]) or "Pilih opsi"
                 DropdownButton.TextColor3 = theme.Text
                 DropdownButton.BackgroundColor3 = theme.InputBg
@@ -1099,7 +1115,7 @@ function SimpleGUI:CreateWindow(options)
                 DropdownButton.Parent = DropdownFrame
                 
                 local ButtonCorner = Instance.new("UICorner")
-                ButtonCorner.CornerRadius = UDim.new(0, 8 * scale)
+                ButtonCorner.CornerRadius = UDim.new(0, 6 * scale)
                 ButtonCorner.Parent = DropdownButton
                 
                 -- Arrow icon
@@ -1117,8 +1133,8 @@ function SimpleGUI:CreateWindow(options)
                 -- Dropdown container
                 local DropdownContainer = Instance.new("Frame")
                 DropdownContainer.Name = "DropdownContainer"
-                DropdownContainer.Size = UDim2.new(1, 0, 0, 0)
-                DropdownContainer.Position = UDim2.new(0, 0, 0, 32 * scale)
+                DropdownContainer.Size = UDim2.new(1, -30, 0, 0)
+                DropdownContainer.Position = UDim2.new(0, 15 * scale, 0, 68 * scale)
                 DropdownContainer.BackgroundColor3 = theme.InputBgFocus
                 DropdownContainer.BackgroundTransparency = 0
                 DropdownContainer.BorderSizePixel = 0
@@ -1127,7 +1143,7 @@ function SimpleGUI:CreateWindow(options)
                 DropdownContainer.Parent = DropdownFrame
                 
                 local ContainerCorner = Instance.new("UICorner")
-                ContainerCorner.CornerRadius = UDim.new(0, 8 * scale)
+                ContainerCorner.CornerRadius = UDim.new(0, 6 * scale)
                 ContainerCorner.Parent = DropdownContainer
                 
                 -- Dropdown list
@@ -1169,12 +1185,12 @@ function SimpleGUI:CreateWindow(options)
                 
                 local function updateContainerSize()
                     local itemCount = #opts.Options
-                    local height = math.min(itemCount * 34 * scale + 4 * scale, 160 * scale)
-                    DropdownContainer.Size = UDim2.new(1, 0, 0, height)
+                    local height = math.min(itemCount * 32 * scale + 4 * scale, 150 * scale)
+                    DropdownContainer.Size = UDim2.new(1, -30, 0, height)
                     
-                    local totalHeight = 24 * scale + 32 * scale
+                    local totalHeight = 70 * scale
                     if isOpen then
-                        totalHeight = totalHeight + height + 4 * scale
+                        totalHeight = 70 * scale + height + 4 * scale
                     end
                     DropdownFrame.Size = UDim2.new(0.95, 0, 0, totalHeight)
                 end
@@ -1221,7 +1237,7 @@ function SimpleGUI:CreateWindow(options)
                         ItemButton.Parent = DropdownList
                         
                         local ItemCorner = Instance.new("UICorner")
-                        ItemCorner.CornerRadius = UDim.new(0, 6 * scale)
+                        ItemCorner.CornerRadius = UDim.new(0, 4 * scale)
                         ItemCorner.Parent = ItemButton
                         
                         ItemButton.MouseEnter:Connect(function()
@@ -1259,7 +1275,8 @@ function SimpleGUI:CreateWindow(options)
                             isOpen = false
                             ArrowLabel.Text = "▼"
                             DropdownContainer.Visible = false
-                            tween(DropdownContainer, {Size = UDim2.new(1, 0, 0, 0)}, 0.15)
+                            tween(DropdownContainer, {Size = UDim2.new(1, -30, 0, 0)}, 0.15)
+                            tween(DropdownFrame, {BorderColor3 = theme.BorderLight}, 0.15)
                             updateContainerSize()
                             
                             if opts.Callback then
@@ -1285,15 +1302,17 @@ function SimpleGUI:CreateWindow(options)
                     if isOpen then
                         ArrowLabel.Text = "▲"
                         DropdownContainer.Visible = true
-                        DropdownContainer.Size = UDim2.new(1, 0, 0, 0)
+                        DropdownContainer.Size = UDim2.new(1, -30, 0, 0)
                         tween(DropdownContainer, {
-                            Size = UDim2.new(1, 0, 0, math.min(#opts.Options * 34 * scale + 4 * scale, 160 * scale))
+                            Size = UDim2.new(1, -30, 0, math.min(#opts.Options * 32 * scale + 4 * scale, 150 * scale))
                         }, 0.2)
                         tween(DropdownButton, {BackgroundColor3 = theme.InputBgFocus}, 0.15)
+                        tween(DropdownFrame, {BorderColor3 = theme.BorderRed}, 0.15)
                     else
                         ArrowLabel.Text = "▼"
-                        tween(DropdownContainer, {Size = UDim2.new(1, 0, 0, 0)}, 0.15)
+                        tween(DropdownContainer, {Size = UDim2.new(1, -30, 0, 0)}, 0.15)
                         tween(DropdownButton, {BackgroundColor3 = theme.InputBg}, 0.15)
+                        tween(DropdownFrame, {BorderColor3 = theme.BorderLight}, 0.15)
                         task.wait(0.15)
                         DropdownContainer.Visible = false
                     end
@@ -1311,8 +1330,9 @@ function SimpleGUI:CreateWindow(options)
                            mousePos.Y < dropdownPos.Y or mousePos.Y > dropdownPos.Y + dropdownSize.Y then
                             isOpen = false
                             ArrowLabel.Text = "▼"
-                            tween(DropdownContainer, {Size = UDim2.new(1, 0, 0, 0)}, 0.15)
+                            tween(DropdownContainer, {Size = UDim2.new(1, -30, 0, 0)}, 0.15)
                             tween(DropdownButton, {BackgroundColor3 = theme.InputBg}, 0.15)
+                            tween(DropdownFrame, {BorderColor3 = theme.BorderLight}, 0.15)
                             task.wait(0.15)
                             DropdownContainer.Visible = false
                             updateContainerSize()
