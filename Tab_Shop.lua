@@ -173,12 +173,7 @@ function ShopAutoBuy.Init(Dependencies)
     
     -- ===== MEMBUAT UI =====
     
-    -- SECTION 1: PILIH BIBIT
-    if Tab.CreateSection then
-        Tab:CreateSection("🌱 PILIH BIBIT")
-    end
-    
-    -- DROPDOWN
+    -- DROPDOWN (PILIH BIBIT)
     local dropdownRef
     if Tab.CreateDropdown then
         dropdownRef = Tab:CreateDropdown({
@@ -197,11 +192,6 @@ function ShopAutoBuy.Init(Dependencies)
                 end
             end
         })
-    end
-    
-    -- SECTION 2: KONFIGURASI
-    if Tab.CreateSection then
-        Tab:CreateSection("⚙️ KONFIGURASI")
     end
     
     -- JUMLAH BIBIT
@@ -247,11 +237,6 @@ function ShopAutoBuy.Init(Dependencies)
         })
     end
     
-    -- SECTION 3: AKSI
-    if Tab.CreateSection then
-        Tab:CreateSection("🎮 AKSI")
-    end
-    
     -- BELI SEKARANG
     if Tab.CreateButton then
         Tab:CreateButton({
@@ -276,10 +261,7 @@ function ShopAutoBuy.Init(Dependencies)
                     else
                         -- Jika gagal, toggle akan kembali mati
                         task.wait(0.1)
-                        if Tab.CreateToggle then
-                            -- Cara mengubah nilai toggle perlu disesuaikan dengan implementasi SimpleGUI
-                            -- Mungkin perlu referensi ke object toggle
-                        end
+                        -- Cara mengubah nilai toggle perlu disesuaikan dengan implementasi SimpleGUI
                     end
                 else
                     stopAutoBuy()
@@ -328,7 +310,7 @@ function ShopAutoBuy.Init(Dependencies)
         }
     end
     
-    print("✅ Shop module loaded")
+    print("✅ Shop module loaded (tanpa section title)")
     return cleanup
 end
 
