@@ -1,5 +1,5 @@
 -- ==============================================
--- 📍 TAB_TELEPORT.LUA - Teleport to Players (Fixed)
+-- 📍 TAB_TELEPORT.LUA - Teleport to Players (Fixed Selection)
 -- ==============================================
 
 local TeleportTab = {}
@@ -19,7 +19,7 @@ function TeleportTab.Init(Dependencies)
     local playerList = {}
     local selectedPlayer = nil
     local refreshConnection = nil
-    local lastRefreshTime = 0 -- Pindahkan ke variable terpisah
+    local lastRefreshTime = 0
     
     -- ===== HELPER FUNCTIONS =====
     
@@ -89,13 +89,13 @@ function TeleportTab.Init(Dependencies)
         
         -- Teleport
         local success = pcall(function()
-            localHRP.CFrame = targetHRP.CFrame + Vector3.new(2, 0, 0) -- Offset sedikit agar tidak overlap
+            localHRP.CFrame = targetHRP.CFrame + Vector3.new(2, 0, 0)
         end)
         
         if success then
             Bdev:Notify({
                 Title = "Teleported",
-                Content = string.format("✅ Teleported to %s", targetPlayer.Name),
+                Content = string.format("✅ Teleported to %s", targetPlayer.DisplayName or targetPlayer.Name),
                 Duration = 2
             })
             return true
@@ -118,6 +118,7 @@ function TeleportTab.Init(Dependencies)
         -- Get all players except local player
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
+                -- Buat display name
                 local displayName = string.format("%s (@%s)", player.DisplayName, player.Name)
                 
                 -- Cek status player
@@ -126,12 +127,15 @@ function TeleportTab.Init(Dependencies)
                     status = "🔴 Dead/Invalid"
                 end
                 
-                table.insert(newList, string.format("%s - %s", displayName, status))
+                -- Simpan dengan key yang MATCH dengan dropdown display
+                local dropdownText = string.format("%s - %s", displayName, status)
+                table.insert(newList, dropdownText)
                 
-                -- Simpan data player
-                playerList[displayName] = {
+                -- Simpan data player dengan key yang SAMA dengan dropdown
+                playerList[dropdownText] = {
                     player = player,
                     displayName = displayName,
+                    name = player.Name,
                     isAlive = isValidTarget(player)
                 }
             end
@@ -145,12 +149,12 @@ function TeleportTab.Init(Dependencies)
         return newList
     end
     
-    -- Auto refresh setiap 3 detik - VERSI DIPERBAIKI
+    -- Auto refresh setiap 3 detik
     refreshConnection = RunService.Heartbeat:Connect(function()
         local currentTime = tick()
         if currentTime - lastRefreshTime > 3 then
             refreshPlayerList()
-            lastRefreshTime = currentTime -- Update variable, bukan property connection
+            lastRefreshTime = currentTime
         end
     end)
     
@@ -170,33 +174,59 @@ function TeleportTab.Init(Dependencies)
         Color = Color3.fromRGB(200, 200, 200)
     })
     
-    -- Player Dropdown
+    -- Player Dropdown - VERSI DIPERBAIKI
     local playerDropdown = Tab:CreateDropdown({
         Name = "PlayerList",
         Text = "👥 Online Players",
-        Options = refreshPlayerList(), -- Initial list
+        Options = refreshPlayerList(),
         Default = "Select a player...",
         Callback = function(selected)
-            -- Find selected player data
-            for displayName, data in pairs(playerList) do
-                if displayName == selected then
-                    selectedPlayer = data.player
-                    
-                    -- Update info
-                    if data.isAlive then
-                        Bdev:Notify({
-                            Title = "Player Selected",
-                            Content = string.format("Selected: %s", displayName),
-                            Duration = 1.5
-                        })
-                    else
-                        Bdev:Notify({
-                            Title = "Warning",
-                            Content = "Selected player is dead or invalid!",
-                            Duration = 2
-                        })
+            -- Cek apakah selected valid
+            if not selected or selected == "Select a player..." then
+                selectedPlayer = nil
+                Bdev:Notify({
+                    Title = "Info",
+                    Content = "No player selected",
+                    Duration = 1
+                })
+                return
+            end
+            
+            -- Cari di playerList menggunakan selected text sebagai KEY
+            local playerData = playerList[selected]
+            
+            if playerData and playerData.player then
+                selectedPlayer = playerData.player
+                
+                -- Notifikasi
+                if playerData.isAlive then
+                    Bdev:Notify({
+                        Title = "Player Selected",
+                        Content = string.format("Selected: %s", playerData.displayName),
+                        Duration = 1.5
+                    })
+                else
+                    Bdev:Notify({
+                        Title = "Warning",
+                        Content = string.format("%s is dead or invalid!", playerData.displayName),
+                        Duration = 2
+                    })
+                end
+            else
+                -- Fallback: coba cari berdasarkan nama
+                for _, data in pairs(playerList) do
+                    if data.name == selected or data.displayName == selected then
+                        selectedPlayer = data.player
+                        break
                     end
-                    break
+                end
+                
+                if not selectedPlayer then
+                    Bdev:Notify({
+                        Title = "Error",
+                        Content = "Failed to select player",
+                        Duration = 2
+                    })
                 end
             end
         end
@@ -208,6 +238,8 @@ function TeleportTab.Init(Dependencies)
         Text = "🔄 Refresh Player List",
         Callback = function()
             local newList = refreshPlayerList()
+            -- Reset selected player
+            selectedPlayer = nil
             Bdev:Notify({
                 Title = "Refreshed",
                 Content = string.format("Found %d online players", #newList),
@@ -216,17 +248,39 @@ function TeleportTab.Init(Dependencies)
         end
     })
     
-    -- Teleport button
+    -- Teleport button - VERSI DIPERBAIKI dengan debug
     Tab:CreateButton({
         Name = "TeleportToPlayer",
         Text = "🚀 Teleport to Selected Player",
         Callback = function()
+            -- Debug: cek nilai selectedPlayer
+            print("Selected Player:", selectedPlayer)
+            
             if not selectedPlayer then
                 Bdev:Notify({
                     Title = "Error",
-                    Content = "❌ No player selected!",
-                    Duration = 2
+                    Content = "❌ No player selected! Please select a player from the dropdown first.",
+                    Duration = 3
                 })
+                return
+            end
+            
+            -- Cek apakah player masih ada di game
+            local playerStillExists = false
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player == selectedPlayer then
+                    playerStillExists = true
+                    break
+                end
+            end
+            
+            if not playerStillExists then
+                Bdev:Notify({
+                    Title = "Error",
+                    Content = "❌ Selected player is no longer in the game!",
+                    Duration = 3
+                })
+                selectedPlayer = nil
                 return
             end
             
@@ -246,7 +300,7 @@ function TeleportTab.Init(Dependencies)
     -- Update player count periodically
     spawn(function()
         while true do
-            local total = #Players:GetPlayers() - 1 -- Exclude self
+            local total = #Players:GetPlayers() - 1
             local alive = 0
             
             for _, player in ipairs(Players:GetPlayers()) do
@@ -262,7 +316,6 @@ function TeleportTab.Init(Dependencies)
     
     -- ===== CLEANUP =====
     
-    -- Cleanup when tab is destroyed
     if Tab.Destroy then
         local oldDestroy = Tab.Destroy
         Tab.Destroy = function()
