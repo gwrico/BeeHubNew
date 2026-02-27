@@ -3263,51 +3263,59 @@ function SimpleGUI:CreateWindow(options)
         return tabObj
     end
     
-    -- MINIMIZE FUNCTIONALITY
-    local originalSize = windowData.Size
-    local isMinimized = false
-    
-    local MinimizedIcon = Instance.new("TextButton")
-    MinimizedIcon.Name = "MinimizedIcon_Bee"
-    MinimizedIcon.Size = UDim2.new(0, 48 * scale, 0, 48 * scale)
-    MinimizedIcon.Position = UDim2.new(0, 20, 0, 20)
-    MinimizedIcon.Text = "B"
-    MinimizedIcon.TextColor3 = theme.Accent
-    MinimizedIcon.BackgroundTransparency = 1
-    MinimizedIcon.TextSize = 64 * scale
-    MinimizedIcon.Font = Enum.Font.GothamBlack
-    MinimizedIcon.Visible = false
-    MinimizedIcon.Parent = self.ScreenGui
+       -- MINIMIZE FUNCTIONALITY
+        local originalSize = windowData.Size
+        local isMinimized = false
 
-    -- OUTLINE HITAM
-    local Outline = Instance.new("UIStroke")
-    Outline.Color = Color3.fromRGB(0, 0, 0)  -- Hitam
-    Outline.Thickness = 3  -- Ketebalan 3 pixel
-    Outline.LineJoinMode = Enum.LineJoinMode.Round  -- Sudut membulat
-    Outline.Transparency = 0
-    Outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Outline.Parent = MinimizedIcon
+        local MinimizedIcon = Instance.new("TextButton")
+        MinimizedIcon.Name = "MinimizedIcon_Bee"
+        MinimizedIcon.Size = UDim2.new(0, 64 * scale, 0, 64 * scale)  -- Ukuran 64
+        MinimizedIcon.Position = UDim2.new(0, 20, 0, 20)
+        MinimizedIcon.Text = ""  -- ❌ KOSONGKAN TEXT PADA BUTTON
+        MinimizedIcon.BackgroundTransparency = 1
+        MinimizedIcon.Visible = false
+        MinimizedIcon.Parent = self.ScreenGui
 
-    -- GLOW TAMBAHAN (OPSIONAL)
-    local Glow = Instance.new("ImageLabel")
-    Glow.Name = "Glow"
-    Glow.Size = UDim2.new(1, 15, 1, 15)
-    Glow.Position = UDim2.new(0, -7.5, 0, -7.5)
-    Glow.BackgroundTransparency = 1
-    Glow.Image = "rbxassetid://13110549987"
-    Glow.ImageColor3 = Color3.fromRGB(0, 0, 0)  -- Hitam
-    Glow.ImageTransparency = 0.4
-    Glow.ScaleType = Enum.ScaleType.Slice
-    Glow.SliceCenter = Rect.new(10, 10, 10, 10)
-    Glow.ZIndex = -1
-    Glow.Parent = MinimizedIcon
-    
-    self.MinimizedIcons[windowData.Name] = {
-        Icon = MinimizedIcon,
-        UpdateTheme = function(self, newTheme)
-            MinimizedIcon.TextColor3 = newTheme.Accent
-        end
-    }
+        -- ✅ BUAT TEXT LABEL UNTUK HURUF B (DENGAN OUTLINE)
+        local IconText = Instance.new("TextLabel")
+        IconText.Name = "IconText"
+        IconText.Size = UDim2.new(1, 0, 1, 0)  -- FULL SIZE
+        IconText.BackgroundTransparency = 1
+        IconText.Text = "B"
+        IconText.TextColor3 = theme.Accent  -- WARNA MERAH
+        IconText.TextSize = 44 * scale  -- SESUAIKAN DENGAN UKURAN ICON
+        IconText.Font = Enum.Font.GothamBlack
+        IconText.Parent = MinimizedIcon
+
+        -- ✅ OUTLINE HITAM (MENGIKUTI BENTUK HURUF)
+        local Outline = Instance.new("UIStroke")
+        Outline.Color = Color3.fromRGB(0, 0, 0)  -- Hitam
+        Outline.Thickness = 3  -- Ketebalan 3 pixel
+        Outline.LineJoinMode = Enum.LineJoinMode.Round
+        Outline.Transparency = 0
+        Outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border  -- ❗ PENTING: Border bukan Context
+        Outline.Parent = IconText  -- ✅ PARENT KE ICONTEXT, BUKAN MINIMIZEDICON
+
+        -- GLOW TAMBAHAN (OPSIONAL)
+        local Glow = Instance.new("ImageLabel")
+        Glow.Name = "Glow"
+        Glow.Size = UDim2.new(1, 15, 1, 15)
+        Glow.Position = UDim2.new(0, -7.5, 0, -7.5)
+        Glow.BackgroundTransparency = 1
+        Glow.Image = "rbxassetid://13110549987"
+        Glow.ImageColor3 = Color3.fromRGB(0, 0, 0)  -- Hitam
+        Glow.ImageTransparency = 0.4
+        Glow.ScaleType = Enum.ScaleType.Slice
+        Glow.SliceCenter = Rect.new(10, 10, 10, 10)
+        Glow.ZIndex = -1
+        Glow.Parent = MinimizedIcon
+
+        self.MinimizedIcons[windowData.Name] = {
+            Icon = MinimizedIcon,
+            UpdateTheme = function(self, newTheme)
+                IconText.TextColor3 = newTheme.Accent  -- ✅ UPDATE WARNA PADA ICONTEXT
+            end
+        }
     
     local function setMinimized(minimize)
         isMinimized = minimize
