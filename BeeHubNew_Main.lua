@@ -4,7 +4,7 @@
 
 -- Configuration
 local CONFIG = {
-    SIMPLEGUI_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/SimpleGUI_NEO.lua",
+    SIMPLEGUI_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/SimpleGUI_BeeHub.lua",
     MODULES_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/",
     LOAD_TIMEOUT = 10
 }
@@ -106,9 +106,7 @@ function Shared.InitializeModules()
         {Name = "AutoFarm", File = "Tab_AutoFarm.lua", TabName = "💰 Auto Farm"},
         {Name = "Shop", File = "Tab_Shop.lua", TabName = "🛍️ Shop"},
         {Name = "Inventory", File = "Tab_Inventory.lua", TabName = "🎒 Inventory"},
-        {Name = "PlayerMods", File = "Tab_PlayerMods.lua", TabName = "👤 Player Mods"},
         {Name = "Teleport", File = "Tab_Teleport.lua", TabName = "📍 Teleport"},
-        {Name = "Visuals", File = "Tab_Visuals.lua", TabName = "👁️ Visuals"},
         {Name = "Misc", File = "Tab_Misc.lua", TabName = "⚡ Misc"},
         {Name = "Utilities", File = "Tab_Utilities.lua", TabName = "🔧 Utilities"},
         {Name = "Discord", File = "Tab_Discord.lua", TabName = "💬 Discord"}
