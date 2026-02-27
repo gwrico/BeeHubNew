@@ -1,5 +1,5 @@
 -- ==============================================
--- 📍 TAB_TELEPORT.LUA - Teleport to Players
+-- 📍 TAB_TELEPORT.LUA - Teleport to Players (Fixed)
 -- ==============================================
 
 local TeleportTab = {}
@@ -14,12 +14,12 @@ function TeleportTab.Init(Dependencies)
     local Players = game:GetService("Players")
     local Workspace = game:GetService("Workspace")
     local RunService = game:GetService("RunService")
-    local UserInputService = game:GetService("UserInputService")
     
     local LocalPlayer = Players.LocalPlayer
     local playerList = {}
     local selectedPlayer = nil
     local refreshConnection = nil
+    local lastRefreshTime = 0 -- Pindahkan ke variable terpisah
     
     -- ===== HELPER FUNCTIONS =====
     
@@ -145,12 +145,12 @@ function TeleportTab.Init(Dependencies)
         return newList
     end
     
-    -- Auto refresh setiap 3 detik
+    -- Auto refresh setiap 3 detik - VERSI DIPERBAIKI
     refreshConnection = RunService.Heartbeat:Connect(function()
-        local lastRefresh = refreshConnection.lastRefresh or 0
-        if tick() - lastRefresh > 3 then
+        local currentTime = tick()
+        if currentTime - lastRefreshTime > 3 then
             refreshPlayerList()
-            refreshConnection.lastRefresh = tick()
+            lastRefreshTime = currentTime -- Update variable, bukan property connection
         end
     end)
     
@@ -233,176 +233,6 @@ function TeleportTab.Init(Dependencies)
             teleportToPlayer(selectedPlayer)
         end
     })
-    
-    -- Quick teleport buttons untuk player terdekat
-    Tab:CreateLabel({
-        Text = "⚡ QUICK TELEPORT",
-        Size = 14,
-        Color = Color3.fromRGB(255, 40, 40)
-    })
-    
-    -- Teleport ke player terdekat
-    Tab:CreateButton({
-        Name = "TeleportNearest",
-        Text = "🎯 Teleport to Nearest Player",
-        Callback = function()
-            if not isAlive() then
-                Bdev:Notify({
-                    Title = "Error",
-                    Content = "❌ You are dead!",
-                    Duration = 2
-                })
-                return
-            end
-            
-            local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not localHRP then return end
-            
-            local nearestPlayer = nil
-            local nearestDistance = math.huge
-            local localPos = localHRP.Position
-            
-            -- Cari player terdekat
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and isValidTarget(player) then
-                    local targetHRP = getPlayerHRP(player)
-                    if targetHRP then
-                        local dist = (targetHRP.Position - localPos).Magnitude
-                        if dist < nearestDistance then
-                            nearestDistance = dist
-                            nearestPlayer = player
-                        end
-                    end
-                end
-            end
-            
-            if nearestPlayer then
-                teleportToPlayer(nearestPlayer)
-            else
-                Bdev:Notify({
-                    Title = "Error",
-                    Content = "❌ No valid players found nearby!",
-                    Duration = 2
-                })
-            end
-        end
-    })
-    
-    -- Teleport ke player terjauh
-    Tab:CreateButton({
-        Name = "TeleportFarthest",
-        Text = "🌍 Teleport to Farthest Player",
-        Callback = function()
-            if not isAlive() then
-                Bdev:Notify({
-                    Title = "Error",
-                    Content = "❌ You are dead!",
-                    Duration = 2
-                })
-                return
-            end
-            
-            local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not localHRP then return end
-            
-            local farthestPlayer = nil
-            local farthestDistance = 0
-            local localPos = localHRP.Position
-            
-            -- Cari player terjauh
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer and isValidTarget(player) then
-                    local targetHRP = getPlayerHRP(player)
-                    if targetHRP then
-                        local dist = (targetHRP.Position - localPos).Magnitude
-                        if dist > farthestDistance then
-                            farthestDistance = dist
-                            farthestPlayer = player
-                        end
-                    end
-                end
-            end
-            
-            if farthestPlayer then
-                teleportToPlayer(farthestPlayer)
-            else
-                Bdev:Notify({
-                    Title = "Error",
-                    Content = "❌ No valid players found!",
-                    Duration = 2
-                })
-            end
-        end
-    })
-    
-    -- ===== KEYBIND SYSTEM =====
-    
-    Tab:CreateLabel({
-        Text = "⌨️ KEYBINDS",
-        Size = 14,
-        Color = Color3.fromRGB(255, 40, 40)
-    })
-    
-    -- Keybind untuk teleport ke player terdekat
-    local nearestKeybind = Tab:CreateKeybind({
-        Name = "NearestKeybind",
-        Text = "Teleport Nearest Key",
-        Default = "None",
-        Callback = function(key)
-            if key then
-                Bdev:Notify({
-                    Title = "Keybind Set",
-                    Content = string.format("Nearest teleport: %s", key),
-                    Duration = 2
-                })
-            end
-        end
-    })
-    
-    -- Keybind untuk teleport ke player terpilih
-    local selectedKeybind = Tab:CreateKeybind({
-        Name = "SelectedKeybind",
-        Text = "Teleport Selected Key",
-        Default = "None",
-        Callback = function(key)
-            if key then
-                Bdev:Notify({
-                    Title = "Keybind Set",
-                    Content = string.format("Selected teleport: %s", key),
-                    Duration = 2
-                })
-            end
-        end
-    })
-    
-    -- Keybind handler
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        
-        -- Check nearest keybind
-        if nearestKeybind and nearestKeybind.GetKey then
-            local key = nearestKeybind:GetKey()
-            if key ~= "None" and input.KeyCode == Enum.KeyCode[key] then
-                -- Trigger nearest teleport
-                local button = Tab:FindFirstChild("TeleportNearest")
-                if button and button:IsA("TextButton") then
-                    button:Click()
-                end
-            end
-        end
-        
-        -- Check selected keybind
-        if selectedKeybind and selectedKeybind.GetKey then
-            local key = selectedKeybind:GetKey()
-            if key ~= "None" and input.KeyCode == Enum.KeyCode[key] then
-                -- Trigger selected teleport
-                local button = Tab:FindFirstChild("TeleportToPlayer")
-                if button and button:IsA("TextButton") then
-                    button:Click()
-                end
-            end
-        end
-    end)
     
     -- ===== STATUS DISPLAY =====
     
