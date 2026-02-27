@@ -3274,7 +3274,7 @@ function SimpleGUI:CreateWindow(options)
     MinimizedIcon.Text = "B"
     MinimizedIcon.TextColor3 = theme.Accent
     MinimizedIcon.BackgroundTransparency = 1
-    MinimizedIcon.TextSize = 50 * scale
+    MinimizedIcon.TextSize = 64 * scale
     MinimizedIcon.Font = Enum.Font.GothamBlack
     MinimizedIcon.Visible = false
     MinimizedIcon.Parent = self.ScreenGui
