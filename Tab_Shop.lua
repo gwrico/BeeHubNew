@@ -44,140 +44,6 @@ function ShopAutoBuy.Init(Dependencies)
         return tween
     end
     
-    -- ===== CREATE TEXTBOX LOKAL (agar tidak mengganggu SimpleGUI) =====
-    local function createTextBox(options)
-        local opts = options or {}
-        
-        -- Main frame dengan border
-        local MainFrame = Instance.new("Frame")
-        MainFrame.Name = opts.Name or "TextBox_" .. math.random(1000, 9999)
-        MainFrame.Size = UDim2.new(0.95, 0, 0, 40)
-        MainFrame.BackgroundColor3 = theme.ContentCard
-        MainFrame.BackgroundTransparency = 0
-        MainFrame.BorderSizePixel = 2
-        MainFrame.BorderColor3 = theme.BorderLight
-        MainFrame.LayoutOrder = #Tab.Elements + 1
-        MainFrame.Parent = Tab.Content
-        
-        local MainCorner = Instance.new("UICorner")
-        MainCorner.CornerRadius = UDim.new(0, 6)
-        MainCorner.Parent = MainFrame
-        
-        -- Inner frame untuk padding
-        local InnerFrame = Instance.new("Frame")
-        InnerFrame.Name = "InnerFrame"
-        InnerFrame.Size = UDim2.new(1, -4, 1, -4)
-        InnerFrame.Position = UDim2.new(0, 2, 0, 2)
-        InnerFrame.BackgroundColor3 = theme.ContentCard
-        InnerFrame.BackgroundTransparency = 0
-        InnerFrame.BorderSizePixel = 0
-        InnerFrame.Parent = MainFrame
-        
-        local InnerCorner = Instance.new("UICorner")
-        InnerCorner.CornerRadius = UDim.new(0, 4)
-        InnerCorner.Parent = InnerFrame
-        
-        -- Layout horizontal
-        local Layout = Instance.new("UIListLayout")
-        Layout.FillDirection = Enum.FillDirection.Horizontal
-        Layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-        Layout.VerticalAlignment = Enum.VerticalAlignment.Center
-        Layout.Padding = UDim.new(0, 10)
-        Layout.Parent = InnerFrame
-        
-        -- Label di KIRI
-        local Label = Instance.new("TextLabel")
-        Label.Name = "Label"
-        Label.Size = UDim2.new(0, 100, 0, 30)
-        Label.Text = opts.Label or "Input:"
-        Label.TextColor3 = theme.Text
-        Label.BackgroundTransparency = 1
-        Label.TextSize = 14
-        Label.Font = Enum.Font.GothamBold
-        Label.TextXAlignment = Enum.TextXAlignment.Left
-        Label.Parent = InnerFrame
-        
-        -- Input frame di KANAN
-        local InputFrame = Instance.new("Frame")
-        InputFrame.Name = "InputFrame"
-        InputFrame.Size = UDim2.new(0, 150, 0, 32)
-        InputFrame.BackgroundColor3 = theme.InputBg
-        InputFrame.BackgroundTransparency = 0
-        InputFrame.Parent = InnerFrame
-        
-        local InputCorner = Instance.new("UICorner")
-        InputCorner.CornerRadius = UDim.new(0, 5)
-        InputCorner.Parent = InputFrame
-        
-        -- Icon (optional)
-        local Icon = Instance.new("TextLabel")
-        Icon.Name = "Icon"
-        Icon.Size = UDim2.new(0, 32, 1, 0)
-        Icon.Text = opts.Icon or "📝"
-        Icon.TextColor3 = theme.Accent
-        Icon.BackgroundTransparency = 1
-        Icon.TextSize = 16
-        Icon.Font = Enum.Font.GothamBold
-        Icon.Parent = InputFrame
-        
-        -- TextBox
-        local TextBox = Instance.new("TextBox")
-        TextBox.Name = "TextBox"
-        TextBox.Size = UDim2.new(1, -32, 1, 0)
-        TextBox.Position = UDim2.new(0, 32, 0, 0)
-        TextBox.Text = opts.Text or ""
-        TextBox.TextColor3 = theme.Text
-        TextBox.BackgroundTransparency = 1
-        TextBox.TextSize = 14
-        TextBox.Font = Enum.Font.Gotham
-        TextBox.ClearTextOnFocus = false
-        TextBox.Parent = InputFrame
-        
-        -- Placeholder
-        if opts.Placeholder and TextBox.Text == "" then
-            TextBox.Text = opts.Placeholder
-            TextBox.TextColor3 = theme.TextMuted
-        end
-        
-        -- Focus handling
-        TextBox.Focused:Connect(function()
-            if TextBox.Text == opts.Placeholder then
-                TextBox.Text = ""
-                TextBox.TextColor3 = theme.Text
-            end
-        end)
-        
-        TextBox.FocusLost:Connect(function(enterPressed)
-            if opts.Callback then
-                local newText = opts.Callback(TextBox.Text)
-                if newText then
-                    TextBox.Text = newText
-                end
-            end
-            
-            if TextBox.Text == "" and opts.Placeholder then
-                TextBox.Text = opts.Placeholder
-                TextBox.TextColor3 = theme.TextMuted
-            end
-        end)
-        
-        -- Return object dengan method
-        local textBoxObj = {
-            Frame = MainFrame,
-            TextBox = TextBox,
-            SetText = function(self, text)
-                TextBox.Text = tostring(text)
-                TextBox.TextColor3 = theme.Text
-            end,
-            GetText = function(self)
-                return TextBox.Text
-            end
-        }
-        
-        table.insert(Tab.Elements, MainFrame)
-        return textBoxObj
-    end
-    
     -- ===== REMOTE SHOP =====
     local RequestShop = ReplicatedStorage:FindFirstChild("Remotes")
     if RequestShop then
@@ -220,9 +86,9 @@ function ShopAutoBuy.Init(Dependencies)
     -- Variable untuk menyimpan references
     local dropdownRef = nil
     local autoToggleRef = nil
-    local buyToggleRef = nil
-    local qtyBoxRef = nil
-    local delayBoxRef = nil
+    local qtyInputRef = nil
+    local delayInputRef = nil
+    local searchBarRef = nil
     
     -- ===== FUNGSI CEK REMOTE =====
     local function checkRemote()
@@ -312,7 +178,36 @@ function ShopAutoBuy.Init(Dependencies)
     
     -- ===== MEMBUAT UI =====
     
-    -- 1. DROPDOWN
+    -- SECTION 1: PENCARIAN & PEMILIHAN
+    Tab:CreateSection("🔍 PENCARIAN")
+    
+    -- SEARCH BAR untuk filter bibit
+    searchBarRef = Tab:CreateSearchBar({
+        Name = "SeedSearch",
+        Text = "🔍 Cari Bibit",
+        Placeholder = "Ketik nama bibit...",
+        Data = seedDisplayOptions,
+        Callback = function(result)
+            if result then
+                -- Update dropdown dengan hasil pencarian
+                selectedDisplay = result
+                selectedSeed = displayToName[result]
+                if dropdownRef and dropdownRef.SetValue then
+                    dropdownRef:SetValue(result)
+                end
+                
+                Bdev:Notify({
+                    Title = "Bibit Dipilih",
+                    Content = result,
+                    Duration = 1
+                })
+            end
+        end
+    })
+    
+    Tab:CreateSection("🌱 PILIH BIBIT")
+    
+    -- DROPDOWN
     dropdownRef = Tab:CreateDropdown({
         Name = "SeedDropdown",
         Text = "🌱 Pilih Bibit",
@@ -321,6 +216,11 @@ function ShopAutoBuy.Init(Dependencies)
         Callback = function(value)
             selectedDisplay = value
             selectedSeed = displayToName[value]
+            
+            -- Update search bar text (optional)
+            if searchBarRef and searchBarRef.SetText then
+                searchBarRef:SetText("")
+            end
             
             Bdev:Notify({
                 Title = "Bibit Dipilih",
@@ -335,74 +235,79 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 2. JUMLAH BIBIT - TEXTBOX
-    qtyBoxRef = createTextBox({
-        Name = "QuantityBox",
-        Label = "🔢 Jumlah Bibit",
-        Icon = "🔢",
-        Text = tostring(buyQuantity),
-        Placeholder = "1-99",
-        Callback = function(text)
-            local value = tonumber(text)
-            if value and value >= 1 and value <= 99 then
-                buyQuantity = math.floor(value)
-                return tostring(buyQuantity)
-            else
-                Bdev:Notify({
-                    Title = "❌ Invalid",
-                    Content = "Jumlah harus 1-99",
-                    Duration = 2
-                })
-                return tostring(buyQuantity)
+    -- SECTION 2: KONFIGURASI
+    Tab:CreateSection("⚙️ KONFIGURASI")
+    
+    -- JUMLAH BIBIT - CreateInput (number)
+    qtyInputRef = Tab:CreateInput({
+        Name = "QuantityInput",
+        Text = "🔢 Jumlah Bibit",
+        InputType = "number",
+        DefaultValue = tostring(buyQuantity),
+        Min = 1,
+        Max = 99,
+        Step = 1,
+        ShowControls = true,
+        LiveUpdate = false,
+        Callback = function(value, enterPressed)
+            local numValue = tonumber(value) or 1
+            numValue = math.clamp(numValue, 1, 99)
+            buyQuantity = math.floor(numValue)
+            
+            -- Update display jika perlu
+            if qtyInputRef and qtyInputRef.SetValue then
+                qtyInputRef:SetValue(tostring(buyQuantity))
+            end
+            
+            if autoBuyEnabled then
+                stopAutoBuy()
+                startAutoBuy()
             end
         end
     })
     
-    -- 3. DELAY - TEXTBOX
-    delayBoxRef = createTextBox({
-        Name = "DelayBox",
-        Label = "⏱️ Delay (detik)",
-        Icon = "⏱️",
-        Text = tostring(buyDelay) .. "s",
-        Placeholder = "0.5-5",
-        Callback = function(text)
-            local cleanText = text:gsub("s", "")
-            local value = tonumber(cleanText)
-            if value and value >= 0.5 and value <= 5 then
-                buyDelay = value
-                if autoBuyEnabled then
-                    stopAutoBuy()
-                    startAutoBuy()
-                end
-                return tostring(value) .. "s"
-            else
-                Bdev:Notify({
-                    Title = "❌ Invalid",
-                    Content = "Delay harus 0.5-5 detik",
-                    Duration = 2
-                })
-                return tostring(buyDelay) .. "s"
+    -- DELAY - CreateInput (number)
+    delayInputRef = Tab:CreateInput({
+        Name = "DelayInput",
+        Text = "⏱️ Delay (detik)",
+        InputType = "number",
+        DefaultValue = tostring(buyDelay),
+        Min = 0.5,
+        Max = 5,
+        Step = 0.5,
+        ShowControls = true,
+        Unit = "s",
+        LiveUpdate = false,
+        Callback = function(value, enterPressed)
+            local numValue = tonumber(value) or 2
+            numValue = math.clamp(numValue, 0.5, 5)
+            buyDelay = numValue
+            
+            -- Update display
+            if delayInputRef and delayInputRef.SetValue then
+                delayInputRef:SetValue(tostring(buyDelay))
+            end
+            
+            if autoBuyEnabled then
+                stopAutoBuy()
+                startAutoBuy()
             end
         end
     })
     
-    -- 4. BELI SEKARANG (TOGGLE)
-    buyToggleRef = Tab:CreateToggle({
-        Name = "BuyNowToggle",
+    -- SECTION 3: AKSI
+    Tab:CreateSection("🎮 AKSI")
+    
+    -- BELI SEKARANG - CreateButton (ganti dari toggle)
+    local buyButton = Tab:CreateButton({
+        Name = "BuyNowButton",
         Text = "🛒 Beli Sekarang",
-        CurrentValue = false,
-        Callback = function(state)
-            if state then
-                buySeed(selectedSeed, buyQuantity, false)
-                task.wait(0.1)
-                if buyToggleRef and buyToggleRef.SetValue then
-                    buyToggleRef:SetValue(false)
-                end
-            end
+        Callback = function()
+            buySeed(selectedSeed, buyQuantity, false)
         end
     })
     
-    -- 5. AUTO BUY (TOGGLE)
+    -- AUTO BUY - Toggle
     autoToggleRef = Tab:CreateToggle({
         Name = "AutoBuyToggle",
         Text = "🤖 Auto Buy",
@@ -422,7 +327,43 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- 6. FOOTER
+    -- SECTION 4: FOOTER
+    Tab:CreateSection("📝 INFO")
+    
+    -- Informasi status
+    local statusLabel = Tab:CreateLabel({
+        Name = "StatusLabel",
+        Text = string.format("➤ Bibit: %s | Jumlah: %d | Delay: %.1fs", 
+            selectedDisplay, buyQuantity, buyDelay),
+        Color = theme.TextSecondary,
+        Alignment = Enum.TextXAlignment.Left
+    })
+    
+    -- Update label saat ada perubahan
+    local function updateStatusLabel()
+        if statusLabel then
+            statusLabel.Text = string.format("➤ Bibit: %s | Jumlah: %d | Delay: %.1fs", 
+                selectedDisplay, buyQuantity, buyDelay)
+        end
+    end
+    
+    -- Hook ke callback untuk update label
+    local originalQtyCallback = qtyInputRef.Callback
+    qtyInputRef.Callback = function(value, enterPressed)
+        if originalQtyCallback then
+            originalQtyCallback(value, enterPressed)
+        end
+        updateStatusLabel()
+    end
+    
+    local originalDelayCallback = delayInputRef.Callback
+    delayInputRef.Callback = function(value, enterPressed)
+        if originalDelayCallback then
+            originalDelayCallback(value, enterPressed)
+        end
+        updateStatusLabel()
+    end
+    
     Tab:CreateLabel({
         Name = "Footer",
         Text = "─────────────────────",
@@ -470,31 +411,39 @@ function ShopAutoBuy.Init(Dependencies)
                 if dropdownRef and dropdownRef.SetValue then
                     dropdownRef:SetValue(seedDisplay)
                 end
+                updateStatusLabel()
             end
         end,
         SetQuantity = function(value)
             if value and value >= 1 and value <= 99 then
                 buyQuantity = math.floor(value)
-                if qtyBoxRef and qtyBoxRef.SetText then
-                    qtyBoxRef:SetText(tostring(buyQuantity))
+                if qtyInputRef and qtyInputRef.SetValue then
+                    qtyInputRef:SetValue(tostring(buyQuantity))
                 end
+                updateStatusLabel()
             end
         end,
         SetDelay = function(value)
             if value and value >= 0.5 and value <= 5 then
                 buyDelay = value
-                if delayBoxRef and delayBoxRef.SetText then
-                    delayBoxRef:SetText(tostring(value) .. "s")
+                if delayInputRef and delayInputRef.SetValue then
+                    delayInputRef:SetValue(tostring(buyDelay))
                 end
                 if autoBuyEnabled then
                     stopAutoBuy()
                     startAutoBuy()
                 end
+                updateStatusLabel()
+            end
+        end,
+        SearchSeed = function(query)
+            if searchBarRef and searchBarRef.SetText then
+                searchBarRef:SetText(query)
             end
         end
     }
     
-    print("✅ Shop module loaded - Dengan TextBox lokal")
+    print("✅ Shop module loaded - Dengan CreateInput, CreateButton, SearchBar")
     
     return cleanup
 end
