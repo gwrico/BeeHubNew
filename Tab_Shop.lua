@@ -5,7 +5,7 @@
 local ShopAutoBuy = {}
 
 function ShopAutoBuy.Init(Dependencies)
-    local Tab = Dependencies.Tab
+    local Tab = Dependencies.Tab  -- <-- INI object tab ASLI dari SimpleGUI
     local Shared = Dependencies.Shared
     local Bdev = Dependencies.Bdev
     local GUI = Dependencies.GUI or Shared.GUI
@@ -27,8 +27,6 @@ function ShopAutoBuy.Init(Dependencies)
     -- Get services
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local RunService = game:GetService("RunService")
-    local TweenService = game:GetService("TweenService")
-    local UserInputService = game:GetService("UserInputService")
     
     -- ===== REMOTE SHOP =====
     local RequestShop = ReplicatedStorage:FindFirstChild("Remotes")
@@ -49,13 +47,11 @@ function ShopAutoBuy.Init(Dependencies)
         {Display = "❌ None", Name = "None"}
     }
     
-    -- Buat array terpisah untuk dropdown options (hanya display names)
     local seedDisplayOptions = {}
     for i, seed in ipairs(seedsList) do
         seedDisplayOptions[i] = seed.Display
     end
     
-    -- Mapping untuk konversi Display -> Name
     local displayToName = {}
     for i, seed in ipairs(seedsList) do
         displayToName[seed.Display] = seed.Name
@@ -69,13 +65,7 @@ function ShopAutoBuy.Init(Dependencies)
     local buyDelay = 2
     local buyQuantity = 1
     
-    -- Variable untuk menyimpan references
-    local dropdownRef = nil
-    local autoToggleRef = nil
-    local qtyInputRef = nil
-    local delayInputRef = nil
-    
-    -- ===== FUNGSI CEK REMOTE =====
+    -- ===== FUNGSI-FUNGSI =====
     local function checkRemote()
         if not RequestShop then
             Bdev:Notify({
@@ -88,54 +78,29 @@ function ShopAutoBuy.Init(Dependencies)
         return true
     end
     
-    -- ===== FUNGSI BELI BIBIT =====
     local function buySeed(seedName, amount, isAuto)
         if not checkRemote() then return false end
-        
         amount = amount or 1
         
-        local arguments = {
-            [1] = "BUY",
-            [2] = seedName,
-            [3] = amount
-        }
-        
-        local success, result = pcall(function()
-            return RequestShop:InvokeServer(unpack(arguments))
+        local success = pcall(function()
+            return RequestShop:InvokeServer("BUY", seedName, amount)
         end)
         
-        if success then
-            if not isAuto then
-                Bdev:Notify({
-                    Title = "✅ Berhasil",
-                    Content = string.format("%s x%d", seedName, amount),
-                    Duration = 2
-                })
-            end
-            return true
-        else
+        if success and not isAuto then
             Bdev:Notify({
-                Title = "❌ Gagal",
-                Content = "Mungkin uang tidak cukup?",
-                Duration = 3
+                Title = "✅ Berhasil",
+                Content = string.format("%s x%d", seedName, amount),
+                Duration = 2
             })
-            return false
         end
+        return success
     end
     
-    -- ===== AUTO BUY LOOP =====
     local function startAutoBuy()
         if autoBuyConnection then
             autoBuyConnection:Disconnect()
         end
-        
         autoBuyEnabled = true
-        
-        Bdev:Notify({
-            Title = "🤖 Auto Buy ON",
-            Content = string.format("%s setiap %d detik", selectedDisplay, buyDelay),
-            Duration = 3
-        })
         
         local lastBuyTime = 0
         autoBuyConnection = RunService.Heartbeat:Connect(function()
@@ -153,24 +118,23 @@ function ShopAutoBuy.Init(Dependencies)
             autoBuyConnection:Disconnect()
             autoBuyConnection = nil
         end
-        
-        Bdev:Notify({
-            Title = "⏹️ Auto Buy OFF",
-            Content = "Dihentikan",
-            Duration = 2
-        })
     end
     
-    -- ===== MEMBUAT UI DENGAN TABGROUP =====
+    -- ===== DEBUG: CEK METHOD =====
+    print("=== METHOD YANG TERSEDIA DI TAB ===")
+    for k, v in pairs(Tab) do
+        if type(v) == "function" then
+            print("✅ " .. tostring(k))
+        end
+    end
+    print("===================================")
     
-    -- Buat TabGroup utama (method ini PASTI ADA di SimpleGUI v8.0)
-    local shopGroup = Tab:CreateTabGroup({Name = "🛒 SHOP MENU"})
+    -- ===== MEMBUAT UI (TANPA TABGROUP) =====
     
-    -- ===== TAB 1: PILIH BIBIT =====
-    local seedTab = shopGroup:CreateSubTab("🌱 Bibit")
+    -- SECTION 1: PEMILIHAN BIBIT
+    Tab:CreateSection("🌱 PILIH BIBIT")
     
-    -- DROPDOWN untuk memilih bibit
-    dropdownRef = seedTab:CreateDropdown({
+    local dropdownRef = Tab:CreateDropdown({
         Name = "SeedDropdown",
         Text = "🌱 Pilih Bibit",
         Options = seedDisplayOptions,
@@ -178,13 +142,6 @@ function ShopAutoBuy.Init(Dependencies)
         Callback = function(value)
             selectedDisplay = value
             selectedSeed = displayToName[value]
-            
-            Bdev:Notify({
-                Title = "Bibit Dipilih",
-                Content = value,
-                Duration = 1
-            })
-            
             if autoBuyEnabled then
                 stopAutoBuy()
                 startAutoBuy()
@@ -192,38 +149,20 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Info bibit
-    seedTab:CreateLabel({
-        Name = "SeedInfo",
-        Text = "Pilih jenis bibit yang ingin dibeli",
-        Color = theme.TextMuted,
-        Size = 11,
-        Alignment = Enum.TextXAlignment.Center
-    })
+    -- SECTION 2: KONFIGURASI
+    Tab:CreateSection("⚙️ KONFIGURASI")
     
-    -- ===== TAB 2: KONFIGURASI =====
-    local configTab = shopGroup:CreateSubTab("⚙️ Config")
-    
-    -- JUMLAH BIBIT - CreateInput (number) - method PASTI ADA
-    qtyInputRef = configTab:CreateInput({
+    local qtyInputRef = Tab:CreateInput({
         Name = "QuantityInput",
-        Text = "🔢 Jumlah Bibit",
+        Text = "🔢 Jumlah",
         InputType = "number",
         DefaultValue = tostring(buyQuantity),
         Min = 1,
         Max = 99,
         Step = 1,
         ShowControls = true,
-        LiveUpdate = false,
-        Callback = function(value, enterPressed)
-            local numValue = tonumber(value) or 1
-            numValue = math.clamp(numValue, 1, 99)
-            buyQuantity = math.floor(numValue)
-            
-            if qtyInputRef and qtyInputRef.SetValue then
-                qtyInputRef:SetValue(tostring(buyQuantity))
-            end
-            
+        Callback = function(value)
+            buyQuantity = tonumber(value) or 1
             if autoBuyEnabled then
                 stopAutoBuy()
                 startAutoBuy()
@@ -231,10 +170,9 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- DELAY - CreateInput (number) - method PASTI ADA
-    delayInputRef = configTab:CreateInput({
+    local delayInputRef = Tab:CreateInput({
         Name = "DelayInput",
-        Text = "⏱️ Delay (detik)",
+        Text = "⏱️ Delay",
         InputType = "number",
         DefaultValue = tostring(buyDelay),
         Min = 0.5,
@@ -242,16 +180,8 @@ function ShopAutoBuy.Init(Dependencies)
         Step = 0.5,
         ShowControls = true,
         Unit = "s",
-        LiveUpdate = false,
-        Callback = function(value, enterPressed)
-            local numValue = tonumber(value) or 2
-            numValue = math.clamp(numValue, 0.5, 5)
-            buyDelay = numValue
-            
-            if delayInputRef and delayInputRef.SetValue then
-                delayInputRef:SetValue(tostring(buyDelay))
-            end
-            
+        Callback = function(value)
+            buyDelay = tonumber(value) or 2
             if autoBuyEnabled then
                 stopAutoBuy()
                 startAutoBuy()
@@ -259,20 +189,10 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Info konfigurasi
-    configTab:CreateLabel({
-        Name = "ConfigInfo",
-        Text = "Atur jumlah dan delay pembelian",
-        Color = theme.TextMuted,
-        Size = 11,
-        Alignment = Enum.TextXAlignment.Center
-    })
+    -- SECTION 3: AKSI
+    Tab:CreateSection("🎮 AKSI")
     
-    -- ===== TAB 3: AKSI & STATUS =====
-    local actionTab = shopGroup:CreateSubTab("🎮 Aksi")
-    
-    -- BELI SEKARANG - CreateButton (method PASTI ADA)
-    local buyButton = actionTab:CreateButton({
+    local buyButton = Tab:CreateButton({
         Name = "BuyNowButton",
         Text = "🛒 Beli Sekarang",
         Callback = function()
@@ -280,8 +200,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- AUTO BUY - Toggle (method PASTI ADA)
-    autoToggleRef = actionTab:CreateToggle({
+    local autoToggleRef = Tab:CreateToggle({
         Name = "AutoBuyToggle",
         Text = "🤖 Auto Buy",
         CurrentValue = autoBuyEnabled,
@@ -290,9 +209,7 @@ function ShopAutoBuy.Init(Dependencies)
                 if checkRemote() then
                     startAutoBuy()
                 else
-                    if autoToggleRef and autoToggleRef.SetValue then
-                        autoToggleRef:SetValue(false)
-                    end
+                    autoToggleRef:SetValue(false)
                 end
             else
                 stopAutoBuy()
@@ -300,56 +217,9 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Status label (method PASTI ADA)
-    local statusLabel = actionTab:CreateLabel({
-        Name = "StatusLabel",
-        Text = string.format("➤ Bibit: %s\n➤ Jumlah: %d\n➤ Delay: %.1fs", 
-            selectedDisplay, buyQuantity, buyDelay),
-        Color = theme.TextSecondary,
-        Size = 12,
-        Alignment = Enum.TextXAlignment.Left
-    })
-    
-    -- Update status label
-    local function updateStatusLabel()
-        if statusLabel then
-            statusLabel.Text = string.format("➤ Bibit: %s\n➤ Jumlah: %d\n➤ Delay: %.1fs", 
-                selectedDisplay, buyQuantity, buyDelay)
-        end
-    end
-    
-    -- Hook ke callback untuk update label
-    local originalQtyCallback = qtyInputRef.Callback
-    qtyInputRef.Callback = function(value, enterPressed)
-        if originalQtyCallback then
-            originalQtyCallback(value, enterPressed)
-        end
-        updateStatusLabel()
-    end
-    
-    local originalDelayCallback = delayInputRef.Callback
-    delayInputRef.Callback = function(value, enterPressed)
-        if originalDelayCallback then
-            originalDelayCallback(value, enterPressed)
-        end
-        updateStatusLabel()
-    end
-    
-    -- Footer
-    actionTab:CreateLabel({
-        Name = "Footer",
-        Text = "─────────────────────",
-        Color = theme.TextMuted,
-        Alignment = Enum.TextXAlignment.Center
-    })
-    
-    -- ===== CLEANUP FUNCTION =====
+    -- ===== CLEANUP =====
     local function cleanup()
-        if autoBuyConnection then
-            autoBuyConnection:Disconnect()
-            autoBuyConnection = nil
-        end
-        autoBuyEnabled = false
+        stopAutoBuy()
     end
     
     -- ===== SHARE FUNCTIONS =====
@@ -358,60 +228,16 @@ function ShopAutoBuy.Init(Dependencies)
         BuySeed = function(seedName, amount)
             return buySeed(seedName, amount or 1, false)
         end,
-        GetStatus = function()
-            return {
-                SelectedDisplay = selectedDisplay,
-                SelectedSeed = selectedSeed,
-                AutoBuyEnabled = autoBuyEnabled,
-                Delay = buyDelay,
-                Quantity = buyQuantity
-            }
-        end,
         StopAutoBuy = stopAutoBuy,
         StartAutoBuy = function()
             if checkRemote() then
                 startAutoBuy()
-                if autoToggleRef and autoToggleRef.SetValue then
-                    autoToggleRef:SetValue(true)
-                end
-            end
-        end,
-        SetSeed = function(seedDisplay)
-            if displayToName[seedDisplay] then
-                selectedDisplay = seedDisplay
-                selectedSeed = displayToName[seedDisplay]
-                if dropdownRef and dropdownRef.SetValue then
-                    dropdownRef:SetValue(seedDisplay)
-                end
-                updateStatusLabel()
-            end
-        end,
-        SetQuantity = function(value)
-            if value and value >= 1 and value <= 99 then
-                buyQuantity = math.floor(value)
-                if qtyInputRef and qtyInputRef.SetValue then
-                    qtyInputRef:SetValue(tostring(buyQuantity))
-                end
-                updateStatusLabel()
-            end
-        end,
-        SetDelay = function(value)
-            if value and value >= 0.5 and value <= 5 then
-                buyDelay = value
-                if delayInputRef and delayInputRef.SetValue then
-                    delayInputRef:SetValue(tostring(buyDelay))
-                end
-                if autoBuyEnabled then
-                    stopAutoBuy()
-                    startAutoBuy()
-                end
-                updateStatusLabel()
+                autoToggleRef:SetValue(true)
             end
         end
     }
     
-    print("✅ Shop module loaded - Dengan TabGroup (tanpa SearchBar)")
-    
+    print("✅ Shop module loaded (simple version)")
     return cleanup
 end
 
