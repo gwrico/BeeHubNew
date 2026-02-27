@@ -74,7 +74,6 @@ function ShopAutoBuy.Init(Dependencies)
     local autoToggleRef = nil
     local qtyInputRef = nil
     local delayInputRef = nil
-    local searchBarRef = nil
     
     -- ===== FUNGSI CEK REMOTE =====
     local function checkRemote()
@@ -164,38 +163,14 @@ function ShopAutoBuy.Init(Dependencies)
     
     -- ===== MEMBUAT UI DENGAN TABGROUP =====
     
-    -- Buat TabGroup utama
+    -- Buat TabGroup utama (method ini PASTI ADA di SimpleGUI v8.0)
     local shopGroup = Tab:CreateTabGroup({Name = "🛒 SHOP MENU"})
     
-    -- ===== TAB 1: PENCARIAN & PEMILIHAN =====
-    local searchTab = shopGroup:CreateSubTab("🔍 Cari")
+    -- ===== TAB 1: PILIH BIBIT =====
+    local seedTab = shopGroup:CreateSubTab("🌱 Bibit")
     
-    -- SEARCH BAR untuk filter bibit
-    searchBarRef = searchTab:CreateSearchBar({
-        Name = "SeedSearch",
-        Text = "🔍 Cari Bibit",
-        Placeholder = "Ketik nama bibit...",
-        Data = seedDisplayOptions,
-        Callback = function(result)
-            if result then
-                -- Update dropdown dengan hasil pencarian
-                selectedDisplay = result
-                selectedSeed = displayToName[result]
-                if dropdownRef and dropdownRef.SetValue then
-                    dropdownRef:SetValue(result)
-                end
-                
-                Bdev:Notify({
-                    Title = "Bibit Dipilih",
-                    Content = result,
-                    Duration = 1
-                })
-            end
-        end
-    })
-    
-    -- DROPDOWN
-    dropdownRef = searchTab:CreateDropdown({
+    -- DROPDOWN untuk memilih bibit
+    dropdownRef = seedTab:CreateDropdown({
         Name = "SeedDropdown",
         Text = "🌱 Pilih Bibit",
         Options = seedDisplayOptions,
@@ -203,11 +178,6 @@ function ShopAutoBuy.Init(Dependencies)
         Callback = function(value)
             selectedDisplay = value
             selectedSeed = displayToName[value]
-            
-            -- Update search bar text (optional)
-            if searchBarRef and searchBarRef.SetText then
-                searchBarRef:SetText("")
-            end
             
             Bdev:Notify({
                 Title = "Bibit Dipilih",
@@ -222,10 +192,10 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Info label
-    searchTab:CreateLabel({
-        Name = "InfoLabel",
-        Text = "🔍 Ketik nama bibit atau pilih dari dropdown",
+    -- Info bibit
+    seedTab:CreateLabel({
+        Name = "SeedInfo",
+        Text = "Pilih jenis bibit yang ingin dibeli",
         Color = theme.TextMuted,
         Size = 11,
         Alignment = Enum.TextXAlignment.Center
@@ -234,7 +204,7 @@ function ShopAutoBuy.Init(Dependencies)
     -- ===== TAB 2: KONFIGURASI =====
     local configTab = shopGroup:CreateSubTab("⚙️ Config")
     
-    -- JUMLAH BIBIT - CreateInput (number)
+    -- JUMLAH BIBIT - CreateInput (number) - method PASTI ADA
     qtyInputRef = configTab:CreateInput({
         Name = "QuantityInput",
         Text = "🔢 Jumlah Bibit",
@@ -250,7 +220,6 @@ function ShopAutoBuy.Init(Dependencies)
             numValue = math.clamp(numValue, 1, 99)
             buyQuantity = math.floor(numValue)
             
-            -- Update display jika perlu
             if qtyInputRef and qtyInputRef.SetValue then
                 qtyInputRef:SetValue(tostring(buyQuantity))
             end
@@ -262,7 +231,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- DELAY - CreateInput (number)
+    -- DELAY - CreateInput (number) - method PASTI ADA
     delayInputRef = configTab:CreateInput({
         Name = "DelayInput",
         Text = "⏱️ Delay (detik)",
@@ -279,7 +248,6 @@ function ShopAutoBuy.Init(Dependencies)
             numValue = math.clamp(numValue, 0.5, 5)
             buyDelay = numValue
             
-            -- Update display
             if delayInputRef and delayInputRef.SetValue then
                 delayInputRef:SetValue(tostring(buyDelay))
             end
@@ -294,7 +262,7 @@ function ShopAutoBuy.Init(Dependencies)
     -- Info konfigurasi
     configTab:CreateLabel({
         Name = "ConfigInfo",
-        Text = "⚙️ Atur jumlah dan delay pembelian",
+        Text = "Atur jumlah dan delay pembelian",
         Color = theme.TextMuted,
         Size = 11,
         Alignment = Enum.TextXAlignment.Center
@@ -303,7 +271,7 @@ function ShopAutoBuy.Init(Dependencies)
     -- ===== TAB 3: AKSI & STATUS =====
     local actionTab = shopGroup:CreateSubTab("🎮 Aksi")
     
-    -- BELI SEKARANG - CreateButton
+    -- BELI SEKARANG - CreateButton (method PASTI ADA)
     local buyButton = actionTab:CreateButton({
         Name = "BuyNowButton",
         Text = "🛒 Beli Sekarang",
@@ -312,7 +280,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- AUTO BUY - Toggle
+    -- AUTO BUY - Toggle (method PASTI ADA)
     autoToggleRef = actionTab:CreateToggle({
         Name = "AutoBuyToggle",
         Text = "🤖 Auto Buy",
@@ -332,7 +300,7 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- Status label
+    -- Status label (method PASTI ADA)
     local statusLabel = actionTab:CreateLabel({
         Name = "StatusLabel",
         Text = string.format("➤ Bibit: %s\n➤ Jumlah: %d\n➤ Delay: %.1fs", 
@@ -367,7 +335,7 @@ function ShopAutoBuy.Init(Dependencies)
         updateStatusLabel()
     end
     
-    -- Info tambahan
+    -- Footer
     actionTab:CreateLabel({
         Name = "Footer",
         Text = "─────────────────────",
@@ -439,26 +407,10 @@ function ShopAutoBuy.Init(Dependencies)
                 end
                 updateStatusLabel()
             end
-        end,
-        SearchSeed = function(query)
-            if searchBarRef and searchBarRef.SetText then
-                searchBarRef:SetText(query)
-            end
-        end,
-        SwitchToTab = function(tabName)
-            -- Fungsi untuk berpindah tab (search, config, action)
-            if tabName == "search" then
-                -- Pindah ke tab pertama
-                -- Implementasi tergantung bagaimana tab group diakses
-            elseif tabName == "config" then
-                -- Pindah ke tab kedua
-            elseif tabName == "action" then
-                -- Pindah ke tab ketiga
-            end
         end
     }
     
-    print("✅ Shop module loaded - Dengan TabGroup (Search, Config, Action)")
+    print("✅ Shop module loaded - Dengan TabGroup (tanpa SearchBar)")
     
     return cleanup
 end
