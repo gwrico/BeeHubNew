@@ -1,5 +1,5 @@
 -- ==============================================
--- 📍 TELEPORT TAB MODULE - FIXED SYNTAX
+-- 📍 TELEPORT TAB MODULE - PURE SIMPLEGUI VERSION
 -- ==============================================
 
 local Teleport = {}
@@ -8,31 +8,16 @@ function Teleport.Init(Dependencies)
     local Tab = Dependencies.Tab
     local Shared = Dependencies.Shared
     local Bdev = Dependencies.Bdev
+    local GUI = Dependencies.GUI
     
     -- Get services
-    local TweenService = game:GetService("TweenService")
-    local UserInputService = game:GetService("UserInputService")
-    
-    -- ===== FUNGSI TWEEN LOKAL =====
-    local function tween(object, properties, duration, easingStyle)
-        if not object then return nil end
-        
-        local tweenInfo = TweenInfo.new(
-            duration or 0.2, 
-            easingStyle or Enum.EasingStyle.Quint, 
-            Enum.EasingDirection.Out
-        )
-        local tween = TweenService:Create(object, tweenInfo, properties)
-        tween:Play()
-        return tween
-    end
+    local Players = Shared.Services.Players
     
     -- ===== VARIABLES =====
     local selectedPlayer = nil
     local playerDropdownRef = nil
     local infoLabelRef = nil
-    local allPlayersList = {}
-    local SearchBox = nil  -- Akan diisi nanti
+    local searchBoxRef = nil
     
     -- ===== FUNGSI TELEPORT =====
     local function teleportToPlayer(targetPlayer)
@@ -87,15 +72,13 @@ function Teleport.Init(Dependencies)
         return false
     end
     
-    -- ===== FUNGSI UPDATE PLAYER LIST =====
+    -- ===== FUNGSI GET PLAYER LIST =====
     local function getPlayerList(searchText)
         local players = {}
-        allPlayersList = {}
         
-        for _, player in pairs(Shared.Services.Players:GetPlayers()) do
+        for _, player in pairs(Players:GetPlayers()) do
             if player ~= game.Players.LocalPlayer then
                 local displayName = "👤 " .. player.Name
-                table.insert(allPlayersList, displayName)
                 
                 if not searchText or searchText == "" then
                     table.insert(players, displayName)
@@ -109,22 +92,11 @@ function Teleport.Init(Dependencies)
         return players
     end
     
-    -- ===== FUNGSI GET PLAYER BY DISPLAY =====
+    -- ===== FUNGSI GET PLAYER FROM DISPLAY =====
     local function getPlayerFromDisplay(display)
         if not display or display == "-- Tidak ada player --" then return nil end
         local name = display:gsub("👤 ", "")
-        return Shared.Services.Players:FindFirstChild(name)
-    end
-    
-    -- ===== FUNGSI UPDATE INFO LABEL =====
-    local function updateInfoLabel()
-        if infoLabelRef then
-            if selectedPlayer then
-                infoLabelRef.Text = "➤ Target: 👤 " .. selectedPlayer.Name
-            else
-                infoLabelRef.Text = "➤ Target: Belum dipilih"
-            end
-        end
+        return Players:FindFirstChild(name)
     end
     
     -- ===== FUNGSI UPDATE DROPDOWN =====
@@ -137,7 +109,7 @@ function Teleport.Init(Dependencies)
                 playerDropdownRef.SetValue("-- Tidak ada player --")
             end
             if infoLabelRef then
-                infoLabelRef.Text = "➤ Target: Tidak ada player online"
+                infoLabelRef:SetText("➤ Target: Tidak ada player online")
             end
             selectedPlayer = nil
         else
@@ -158,34 +130,32 @@ function Teleport.Init(Dependencies)
                     else
                         selectedPlayer = getPlayerFromDisplay(players[1])
                         playerDropdownRef.SetValue(players[1])
-                        updateInfoLabel()
-                        
-                        Bdev:Notify({
-                            Title = "🔄 Player Berubah",
-                            Content = "Sekarang: " .. selectedPlayer.Name,
-                            Duration = 2
-                        })
+                        if infoLabelRef then
+                            infoLabelRef:SetText("➤ Target: 👤 " .. selectedPlayer.Name)
+                        end
                     end
                 else
                     selectedPlayer = getPlayerFromDisplay(players[1])
                     playerDropdownRef.SetValue(players[1])
-                    updateInfoLabel()
+                    if infoLabelRef then
+                        infoLabelRef:SetText("➤ Target: 👤 " .. selectedPlayer.Name)
+                    end
                 end
             end
         end
     end
     
-    -- ===== MEMBUAT UI =====
+    -- ===== MEMBUAT UI DENGAN SIMPLEGUI =====
     
     -- 1. HEADER
-    local header = Tab:CreateLabel({
+    Tab:CreateLabel({
         Name = "Header_Teleport",
         Text = "───── 📍 TELEPORT ─────",
         Color = Color3.fromRGB(255, 185, 0),
         Alignment = Enum.TextXAlignment.Center
     })
     
-    -- 2. INFO LABEL
+    -- 2. INFO LABEL (akan diupdate)
     infoLabelRef = Tab:CreateLabel({
         Name = "InfoLabel",
         Text = "➤ Target: Belum dipilih",
@@ -193,77 +163,27 @@ function Teleport.Init(Dependencies)
         Alignment = Enum.TextXAlignment.Left
     })
     
-    -- 3. SEARCH SECTION
-    local SearchFrame = Instance.new("Frame")
-    SearchFrame.Name = "SearchFrame"
-    SearchFrame.Size = UDim2.new(0.95, 0, 0, 40)
-    SearchFrame.BackgroundTransparency = 1
-    SearchFrame.LayoutOrder = #Tab.Elements + 1
-    SearchFrame.Parent = Tab.Content
+    -- 3. SEARCH BAR (menggunakan CreateSearchBar dari SimpleGUI)
+    searchBoxRef = Tab:CreateSearchBar({
+        Name = "PlayerSearch",
+        Text = "🔍 Cari Player",
+        Placeholder = "Ketik nama player...",
+        Data = getPlayerList(),
+        Callback = function(searchText)
+            updateDropdownOptions(searchText)
+        end
+    })
     
-    -- Search Box Frame
-    local SearchBoxFrame = Instance.new("Frame")
-    SearchBoxFrame.Name = "SearchBoxFrame"
-    SearchBoxFrame.Size = UDim2.new(0.75, 0, 0, 36)
-    SearchBoxFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    SearchBoxFrame.BackgroundTransparency = 0
-    SearchBoxFrame.Parent = SearchFrame
-    
-    local SearchBoxCorner = Instance.new("UICorner")
-    SearchBoxCorner.CornerRadius = UDim.new(0, 6)
-    SearchBoxCorner.Parent = SearchBoxFrame
-    
-    local SearchIcon = Instance.new("TextLabel")
-    SearchIcon.Name = "SearchIcon"
-    SearchIcon.Size = UDim2.new(0, 30, 1, 0)
-    SearchIcon.Text = "🔍"
-    SearchIcon.TextColor3 = Color3.fromRGB(255, 185, 0)
-    SearchIcon.BackgroundTransparency = 1
-    SearchIcon.TextSize = 16
-    SearchIcon.Font = Enum.Font.Gotham
-    SearchIcon.Parent = SearchBoxFrame
-    
-    SearchBox = Instance.new("TextBox")  -- ← SEKARANG SearchBox sebagai variabel global di module
-    SearchBox.Name = "SearchBox"
-    SearchBox.Size = UDim2.new(1, -35, 1, 0)
-    SearchBox.Position = UDim2.new(0, 30, 0, 0)
-    SearchBox.Text = ""
-    SearchBox.PlaceholderText = "Cari player..."
-    SearchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 160)
-    SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SearchBox.BackgroundTransparency = 1
-    SearchBox.TextSize = 14
-    SearchBox.Font = Enum.Font.Gotham
-    SearchBox.ClearTextOnFocus = false
-    SearchBox.Parent = SearchBoxFrame
-    
-    -- Refresh Button
-    local RefreshBtn = Instance.new("TextButton")
-    RefreshBtn.Name = "RefreshBtn"
-    RefreshBtn.Size = UDim2.new(0.2, 0, 0, 36)
-    RefreshBtn.Position = UDim2.new(0.78, 5, 0, 0)
-    RefreshBtn.Text = "🔄 Refresh"
-    RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    RefreshBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 85)
-    RefreshBtn.BackgroundTransparency = 0
-    RefreshBtn.TextSize = 14
-    RefreshBtn.Font = Enum.Font.Gotham
-    RefreshBtn.AutoButtonColor = false
-    RefreshBtn.Parent = SearchFrame
-    
-    local RefreshCorner = Instance.new("UICorner")
-    RefreshCorner.CornerRadius = UDim.new(0, 6)
-    RefreshCorner.Parent = RefreshBtn
-    
-    -- 4. DROPDOWN PLAYER
-    local initialPlayers = getPlayerList()
-    
-    local dropdownLabel = Tab:CreateLabel({
+    -- 4. DROPDOWN LABEL
+    Tab:CreateLabel({
         Name = "DropdownLabel",
         Text = "📋 Pilih Player:",
         Color = Color3.fromRGB(255, 255, 255),
         Alignment = Enum.TextXAlignment.Left
     })
+    
+    -- 5. DROPDOWN PLAYER
+    local initialPlayers = getPlayerList()
     
     playerDropdownRef = Tab:CreateDropdown({
         Name = "PlayerDropdown",
@@ -273,123 +193,103 @@ function Teleport.Init(Dependencies)
         Callback = function(value)
             if value == "-- Tidak ada player --" then
                 selectedPlayer = nil
+                if infoLabelRef then
+                    infoLabelRef:SetText("➤ Target: Belum dipilih")
+                end
             else
                 selectedPlayer = getPlayerFromDisplay(value)
-            end
-            updateInfoLabel()
-            
-            if selectedPlayer then
+                if infoLabelRef then
+                    infoLabelRef:SetText("➤ Target: " .. value)
+                end
+                
                 Bdev:Notify({
                     Title = "✅ Dipilih",
-                    Content = selectedPlayer.Name,
+                    Content = selectedPlayer and selectedPlayer.Name or "Unknown",
                     Duration = 1
                 })
             end
         end
     })
     
+    -- Set default selected player
     if #initialPlayers > 0 then
         selectedPlayer = getPlayerFromDisplay(initialPlayers[1])
         if playerDropdownRef and playerDropdownRef.SetValue then
             playerDropdownRef.SetValue(initialPlayers[1])
         end
-        updateInfoLabel()
+        if infoLabelRef then
+            infoLabelRef:SetText("➤ Target: " .. initialPlayers[1])
+        end
     end
     
-    -- Spacer
+    -- 6. REFRESH BUTTON (menggunakan CreateButton)
+    Tab:CreateButton({
+        Name = "RefreshButton",
+        Text = "🔄 Refresh Player List",
+        Callback = function()
+            local searchText = ""
+            if searchBoxRef and searchBoxRef.GetText then
+                searchText = searchBoxRef.GetText()
+            end
+            updateDropdownOptions(searchText)
+            
+            Bdev:Notify({
+                Title = "🔄 Refresh",
+                Content = "Daftar player diperbarui",
+                Duration = 2
+            })
+        end
+    })
+    
+    -- 7. TELEPORT BUTTON (menggunakan CreateButton)
+    Tab:CreateButton({
+        Name = "TeleportButton",
+        Text = "📍 TELEPORT NOW",
+        Callback = function()
+            teleportToPlayer(selectedPlayer)
+        end
+    })
+    
+    -- 8. SPACER / FOOTER
     Tab:CreateLabel({
-        Name = "Spacer",
-        Text = "",
+        Name = "Footer",
+        Text = "─────────────────────",
+        Color = Color3.fromRGB(140, 140, 150),
         Alignment = Enum.TextXAlignment.Center
     })
     
-    -- 5. TOMBOL TELEPORT
-    local TeleportBtn = Instance.new("TextButton")
-    TeleportBtn.Name = "TeleportBtn"
-    TeleportBtn.Size = UDim2.new(0.95, 0, 0, 45)
-    TeleportBtn.Text = "📍 TELEPORT"
-    TeleportBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TeleportBtn.BackgroundColor3 = Color3.fromRGB(255, 185, 0)
-    TeleportBtn.BackgroundTransparency = 0
-    TeleportBtn.TextSize = 16
-    TeleportBtn.Font = Enum.Font.GothamBold
-    TeleportBtn.AutoButtonColor = false
-    TeleportBtn.LayoutOrder = #Tab.Elements + 1
-    TeleportBtn.Parent = Tab.Content
-    
-    local TeleportCorner = Instance.new("UICorner")
-    TeleportCorner.CornerRadius = UDim.new(0, 8)
-    TeleportCorner.Parent = TeleportBtn
-    
-    -- ===== EVENT HANDLERS =====
-    
-    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-        updateDropdownOptions(SearchBox.Text)
-    end)
-    
-    RefreshBtn.MouseButton1Click:Connect(function()
-        updateDropdownOptions(SearchBox.Text)
-        Bdev:Notify({
-            Title = "🔄 Refresh",
-            Content = "Daftar player diperbarui",
-            Duration = 2
-        })
-    end)
-    
-    TeleportBtn.MouseButton1Click:Connect(function()
-        teleportToPlayer(selectedPlayer)
-    end)
-    
-    -- ===== HOVER EFFECTS =====
-    local function setupHover(btn, normalColor, hoverColor)
-        btn.MouseEnter:Connect(function()
-            tween(btn, {BackgroundColor3 = hoverColor}, 0.15)
-        end)
-        btn.MouseLeave:Connect(function()
-            tween(btn, {BackgroundColor3 = normalColor}, 0.15)
-        end)
-    end
-    
-    setupHover(TeleportBtn, Color3.fromRGB(255, 185, 0), Color3.fromRGB(255, 215, 100))
-    setupHover(RefreshBtn, Color3.fromRGB(70, 70, 85), Color3.fromRGB(90, 90, 105))
-    
-    SearchBoxFrame.MouseEnter:Connect(function()
-        tween(SearchBoxFrame, {BackgroundColor3 = Color3.fromRGB(40, 40, 55)}, 0.15)
-    end)
-    
-    SearchBoxFrame.MouseLeave:Connect(function()
-        tween(SearchBoxFrame, {BackgroundColor3 = Color3.fromRGB(30, 30, 40)}, 0.15)
-    end)
-    
     -- ===== AUTO REFRESH =====
-    local Players = Shared.Services.Players
-    
     Players.PlayerAdded:Connect(function()
         task.wait(1)
-        updateDropdownOptions(SearchBox.Text)
+        local searchText = searchBoxRef and searchBoxRef.GetText and searchBoxRef.GetText() or ""
+        updateDropdownOptions(searchText)
     end)
     
     Players.PlayerRemoving:Connect(function()
-        updateDropdownOptions(SearchBox.Text)
+        local searchText = searchBoxRef and searchBoxRef.GetText and searchBoxRef.GetText() or ""
+        updateDropdownOptions(searchText)
     end)
     
-    -- ===== SHARE FUNCTIONS ===== (← INI YANG DIPERBAIKI)
+    -- ===== SHARE FUNCTIONS =====
     Shared.Modules = Shared.Modules or {}
     Shared.Modules.Teleport = {
         TeleportToPlayer = teleportToPlayer,
         GetSelectedPlayer = function() 
-            return selectedPlayer  -- ← Perbaiki di sini
+            return selectedPlayer 
         end,
         RefreshList = function() 
-            updateDropdownOptions(SearchBox.Text)  -- ← Perbaiki di sini
+            local searchText = searchBoxRef and searchBoxRef.GetText and searchBoxRef.GetText() or ""
+            updateDropdownOptions(searchText) 
         end,
         Search = function(text)
-            SearchBox.Text = text
+            if searchBoxRef and searchBoxRef.SetText then
+                searchBoxRef.SetText(text)
+            end
             updateDropdownOptions(text)
         end
     }
     
-    print("✅ Teleport module loaded")
+    print("✅ Teleport module loaded - Pure SimpleGUI Version")
     
     return function() end
 end
