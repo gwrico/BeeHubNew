@@ -3296,7 +3296,7 @@ function SimpleGUI:CreateWindow(options)
     Glow.BackgroundTransparency = 1
     Glow.Image = "rbxassetid://13110549987"
     Glow.ImageColor3 = Color3.fromRGB(0, 0, 0)  -- Hitam
-    Glow.ImageTransparency = 0.4
+    Glow.ImageTransparency = 0
     Glow.ScaleType = Enum.ScaleType.Slice
     Glow.SliceCenter = Rect.new(10, 10, 10, 10)
     Glow.ZIndex = -1
