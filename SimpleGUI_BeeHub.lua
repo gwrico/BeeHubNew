@@ -3269,32 +3269,30 @@ function SimpleGUI:CreateWindow(options)
 
         local MinimizedIcon = Instance.new("TextButton")
         MinimizedIcon.Name = "MinimizedIcon_Bee"
-        MinimizedIcon.Size = UDim2.new(0, 60 * scale, 0, 60 * scale)
+        MinimizedIcon.Size = UDim2.new(0, 48 * scale, 0, 48 * scale)
         MinimizedIcon.Position = UDim2.new(0, 20, 0, 20)
-        MinimizedIcon.Text = ""  -- ❌ KOSONGKAN TEXT DI BUTTON
+        MinimizedIcon.Text = ""  -- KOSONGKAN, tapi tidak dihapus
         MinimizedIcon.BackgroundTransparency = 1
         MinimizedIcon.Visible = false
         MinimizedIcon.Parent = self.ScreenGui
 
-        -- ✅ BUAT TEXT LABEL UNTUK HURUF B
+        -- TextLabel untuk huruf B
         local IconText = Instance.new("TextLabel")
-        IconText.Name = "IconText"
-        IconText.Size = UDim2.new(1, 0, 1, 0)  -- FULL SIZE MENGIKUTI BUTTON
+        IconText.Size = UDim2.new(1, 0, 1, 0)
         IconText.BackgroundTransparency = 1
         IconText.Text = "B"
         IconText.TextColor3 = theme.Accent
-        IconText.TextSize = 60 * scale  -- Sesuaikan dengan ukuran icon
+        IconText.TextSize = 64 * scale  -- Pakai ukuran Anda
         IconText.Font = Enum.Font.GothamBlack
         IconText.Parent = MinimizedIcon
 
-        -- ✅ OUTLINE HITAM (MENGIKUTI BENTUK HURUF)
+        -- Outline pada IconText (bukan pada MinimizedIcon)
         local Outline = Instance.new("UIStroke")
-        Outline.Color = Color3.fromRGB(0, 0, 0)  -- Hitam
-        Outline.Thickness = 3  -- Ketebalan 3 pixel
-        Outline.LineJoinMode = Enum.LineJoinMode.Round  -- Sudut membulat
+        Outline.Color = Color3.fromRGB(0, 0, 0)
+        Outline.Thickness = 3
         Outline.Transparency = 0.8
-        Outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border  -- ❗ PENTING
-        Outline.Parent = IconText  -- ✅ PARENT KE ICONTEXT, BUKAN MINIMIZEDICON
+        Outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        Outline.Parent = IconText  -- PENTING: Parent ke IconText
 
         -- GLOW TAMBAHAN (OPSIONAL)
         local Glow = Instance.new("ImageLabel")
