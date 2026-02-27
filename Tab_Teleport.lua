@@ -1,308 +1,450 @@
 -- ==============================================
--- 📍 TELEPORT TAB MODULE - PURE SIMPLEGUI VERSION
+-- 📍 TAB_TELEPORT.LUA - Teleport to Players
 -- ==============================================
 
-local Teleport = {}
+local TeleportTab = {}
 
-function Teleport.Init(Dependencies)
+function TeleportTab.Init(Dependencies)
     local Tab = Dependencies.Tab
     local Shared = Dependencies.Shared
     local Bdev = Dependencies.Bdev
     local GUI = Dependencies.GUI
     
-    -- Get services
-    local Players = Shared.Services.Players
+    -- Services
+    local Players = game:GetService("Players")
+    local Workspace = game:GetService("Workspace")
+    local RunService = game:GetService("RunService")
+    local UserInputService = game:GetService("UserInputService")
     
-    -- ===== VARIABLES =====
+    local LocalPlayer = Players.LocalPlayer
+    local playerList = {}
     local selectedPlayer = nil
-    local playerDropdownRef = nil
-    local infoLabelRef = nil
-    local searchBoxRef = nil
+    local refreshConnection = nil
     
-    -- ===== FUNGSI TELEPORT =====
-    local function teleportToPlayer(targetPlayer)
-        if not targetPlayer then
-            Bdev:Notify({
-                Title = "❌ Error",
-                Content = "Pilih player terlebih dahulu!",
-                Duration = 3
-            })
-            return false
-        end
-        
-        local player = game.Players.LocalPlayer
+    -- ===== HELPER FUNCTIONS =====
+    
+    -- Get player character safely
+    local function getCharacter(player)
         local character = player.Character
-        if not character then 
+        if not character then
+            character = player.CharacterAdded:Wait(5)
+        end
+        return character
+    end
+    
+    -- Get HumanoidRootPart of a player
+    local function getPlayerHRP(player)
+        local character = getCharacter(player)
+        return character and character:FindFirstChild("HumanoidRootPart")
+    end
+    
+    -- Check if local player is alive
+    local function isAlive()
+        local character = LocalPlayer.Character
+        local humanoid = character and character:FindFirstChild("Humanoid")
+        return humanoid and humanoid.Health > 0
+    end
+    
+    -- Check if target player is valid for teleport
+    local function isValidTarget(player)
+        if not player or player == LocalPlayer then return false end
+        
+        local hrp = getPlayerHRP(player)
+        if not hrp then return false end
+        
+        local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+        return humanoid and humanoid.Health > 0
+    end
+    
+    -- ===== CORE TELEPORT FUNCTION =====
+    
+    local function teleportToPlayer(targetPlayer)
+        -- Validasi local player
+        if not isAlive() then
             Bdev:Notify({
-                Title = "❌ Error",
-                Content = "Character not found!",
-                Duration = 3
+                Title = "Error",
+                Content = "❌ You are dead!",
+                Duration = 2
             })
             return false
         end
         
-        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-        if not humanoidRootPart then 
+        -- Validasi target player
+        if not isValidTarget(targetPlayer) then
             Bdev:Notify({
-                Title = "❌ Error",
-                Content = "HumanoidRootPart not found!",
-                Duration = 3
+                Title = "Error",
+                Content = "❌ Target player is invalid or dead!",
+                Duration = 2
             })
             return false
         end
         
-        if targetPlayer.Character then
-            local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if targetHRP then
-                humanoidRootPart.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
-                Bdev:Notify({
-                    Title = "✅ Teleport",
-                    Content = "Ke " .. targetPlayer.Name,
-                    Duration = 2
-                })
-                return true
-            end
-        end
+        -- Dapatkan posisi target
+        local targetHRP = getPlayerHRP(targetPlayer)
+        if not targetHRP then return false end
         
-        Bdev:Notify({
-            Title = "❌ Error",
-            Content = "Player tidak memiliki karakter!",
-            Duration = 3
-        })
-        return false
-    end
-    
-    -- ===== FUNGSI GET PLAYER LIST =====
-    local function getPlayerList(searchText)
-        local players = {}
+        -- Dapatkan HRP local player
+        local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not localHRP then return false end
         
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                local displayName = "👤 " .. player.Name
-                
-                if not searchText or searchText == "" then
-                    table.insert(players, displayName)
-                elseif player.Name:lower():find(searchText:lower()) then
-                    table.insert(players, displayName)
-                end
-            end
-        end
+        -- Teleport
+        local success = pcall(function()
+            localHRP.CFrame = targetHRP.CFrame + Vector3.new(2, 0, 0) -- Offset sedikit agar tidak overlap
+        end)
         
-        table.sort(players)
-        return players
-    end
-    
-    -- ===== FUNGSI GET PLAYER FROM DISPLAY =====
-    local function getPlayerFromDisplay(display)
-        if not display or display == "-- Tidak ada player --" then return nil end
-        local name = display:gsub("👤 ", "")
-        return Players:FindFirstChild(name)
-    end
-    
-    -- ===== FUNGSI UPDATE DROPDOWN =====
-    local function updateDropdownOptions(searchText)
-        local players = getPlayerList(searchText)
-        
-        if #players == 0 then
-            if playerDropdownRef then
-                playerDropdownRef.UpdateOptions({"-- Tidak ada player --"})
-                playerDropdownRef.SetValue("-- Tidak ada player --")
-            end
-            if infoLabelRef then
-                infoLabelRef.Text = "➤ Target: Tidak ada player online"  -- ← LANGSUNG .Text
-            end
-            selectedPlayer = nil
+        if success then
+            Bdev:Notify({
+                Title = "Teleported",
+                Content = string.format("✅ Teleported to %s", targetPlayer.Name),
+                Duration = 2
+            })
+            return true
         else
-            if playerDropdownRef then
-                playerDropdownRef.UpdateOptions(players)
+            Bdev:Notify({
+                Title = "Error",
+                Content = "❌ Teleport failed!",
+                Duration = 2
+            })
+            return false
+        end
+    end
+    
+    -- ===== REFRESH PLAYER LIST =====
+    
+    local function refreshPlayerList()
+        local newList = {}
+        playerList = {}
+        
+        -- Get all players except local player
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                local displayName = string.format("%s (@%s)", player.DisplayName, player.Name)
                 
-                if selectedPlayer then
-                    local found = false
-                    for _, p in pairs(players) do
-                        if p == "👤 " .. selectedPlayer.Name then
-                            found = true
-                            break
-                        end
-                    end
+                -- Cek status player
+                local status = "🟢 Online"
+                if not isValidTarget(player) then
+                    status = "🔴 Dead/Invalid"
+                end
+                
+                table.insert(newList, string.format("%s - %s", displayName, status))
+                
+                -- Simpan data player
+                playerList[displayName] = {
+                    player = player,
+                    displayName = displayName,
+                    isAlive = isValidTarget(player)
+                }
+            end
+        end
+        
+        -- Update dropdown jika ada
+        if playerDropdown and playerDropdown.UpdateOptions then
+            playerDropdown:UpdateOptions(newList)
+        end
+        
+        return newList
+    end
+    
+    -- Auto refresh setiap 3 detik
+    refreshConnection = RunService.Heartbeat:Connect(function()
+        local lastRefresh = refreshConnection.lastRefresh or 0
+        if tick() - lastRefresh > 3 then
+            refreshPlayerList()
+            refreshConnection.lastRefresh = tick()
+        end
+    end)
+    
+    -- ===== UI ELEMENTS =====
+    
+    -- Header
+    Tab:CreateLabel({
+        Text = "📍 TELEPORT TO PLAYER",
+        Size = 16,
+        Color = Color3.fromRGB(255, 40, 40)
+    })
+    
+    -- Info label
+    Tab:CreateLabel({
+        Text = "Select a player from the dropdown below",
+        Size = 12,
+        Color = Color3.fromRGB(200, 200, 200)
+    })
+    
+    -- Player Dropdown
+    local playerDropdown = Tab:CreateDropdown({
+        Name = "PlayerList",
+        Text = "👥 Online Players",
+        Options = refreshPlayerList(), -- Initial list
+        Default = "Select a player...",
+        Callback = function(selected)
+            -- Find selected player data
+            for displayName, data in pairs(playerList) do
+                if displayName == selected then
+                    selectedPlayer = data.player
                     
-                    if found then
-                        playerDropdownRef.SetValue("👤 " .. selectedPlayer.Name)
+                    -- Update info
+                    if data.isAlive then
+                        Bdev:Notify({
+                            Title = "Player Selected",
+                            Content = string.format("Selected: %s", displayName),
+                            Duration = 1.5
+                        })
                     else
-                        selectedPlayer = getPlayerFromDisplay(players[1])
-                        playerDropdownRef.SetValue(players[1])
-                        if infoLabelRef then
-                            infoLabelRef.Text = "➤ Target: 👤 " .. selectedPlayer.Name  -- ← LANGSUNG .Text
-                        end
+                        Bdev:Notify({
+                            Title = "Warning",
+                            Content = "Selected player is dead or invalid!",
+                            Duration = 2
+                        })
                     end
-                else
-                    selectedPlayer = getPlayerFromDisplay(players[1])
-                    playerDropdownRef.SetValue(players[1])
-                    if infoLabelRef then
-                        infoLabelRef.Text = "➤ Target: 👤 " .. selectedPlayer.Name  -- ← LANGSUNG .Text
-                    end
+                    break
                 end
             end
         end
-    end
-    
-    -- ===== MEMBUAT UI DENGAN SIMPLEGUI =====
-    
-    -- 1. HEADER
-    Tab:CreateLabel({
-        Name = "Header_Teleport",
-        Text = "───── 📍 TELEPORT ─────",
-        Color = Color3.fromRGB(255, 185, 0),
-        Alignment = Enum.TextXAlignment.Center
     })
     
-    -- 2. INFO LABEL (akan diupdate)
-    infoLabelRef = Tab:CreateLabel({
-        Name = "InfoLabel",
-        Text = "➤ Target: Belum dipilih",
-        Color = Color3.fromRGB(255, 255, 255),
-        Alignment = Enum.TextXAlignment.Left
-    })
-    
-    -- 3. SEARCH BAR (menggunakan CreateInput sebagai alternatif CreateSearchBar)
-    local searchInput = Tab:CreateInput({
-        Name = "SearchInput",
-        Text = "🔍 Cari Player",
-        PlaceholderText = "Ketik nama player...",
-        Callback = function(value)
-            updateDropdownOptions(value)
-        end
-    })
-    
-    -- Simpan referensi untuk search
-    searchBoxRef = {
-        GetText = function() 
-            return searchInput and searchInput.GetValue and searchInput.GetValue() or "" 
-        end,
-        SetText = function(text)
-            if searchInput and searchInput.SetValue then
-                searchInput.SetValue(text)
-            end
-        end
-    }
-    
-    -- 4. DROPDOWN LABEL
-    Tab:CreateLabel({
-        Name = "DropdownLabel",
-        Text = "📋 Pilih Player:",
-        Color = Color3.fromRGB(255, 255, 255),
-        Alignment = Enum.TextXAlignment.Left
-    })
-    
-    -- 5. DROPDOWN PLAYER
-    local initialPlayers = getPlayerList()
-    
-    playerDropdownRef = Tab:CreateDropdown({
-        Name = "PlayerDropdown",
-        Text = "Pilih Player:",
-        Options = #initialPlayers > 0 and initialPlayers or {"-- Tidak ada player --"},
-        Default = #initialPlayers > 0 and initialPlayers[1] or "-- Tidak ada player --",
-        Callback = function(value)
-            if value == "-- Tidak ada player --" then
-                selectedPlayer = nil
-                if infoLabelRef then
-                    infoLabelRef.Text = "➤ Target: Belum dipilih"  -- ← LANGSUNG .Text
-                end
-            else
-                selectedPlayer = getPlayerFromDisplay(value)
-                if infoLabelRef then
-                    infoLabelRef.Text = "➤ Target: " .. value  -- ← LANGSUNG .Text
-                end
-                
-                Bdev:Notify({
-                    Title = "✅ Dipilih",
-                    Content = selectedPlayer and selectedPlayer.Name or "Unknown",
-                    Duration = 1
-                })
-            end
-        end
-    })
-    
-    -- Set default selected player
-    if #initialPlayers > 0 then
-        selectedPlayer = getPlayerFromDisplay(initialPlayers[1])
-        if playerDropdownRef and playerDropdownRef.SetValue then
-            playerDropdownRef.SetValue(initialPlayers[1])
-        end
-        if infoLabelRef then
-            infoLabelRef.Text = "➤ Target: " .. initialPlayers[1]  -- ← LANGSUNG .Text
-        end
-    end
-    
-    -- 6. REFRESH BUTTON (menggunakan CreateButton)
+    -- Manual refresh button
     Tab:CreateButton({
-        Name = "RefreshButton",
+        Name = "RefreshList",
         Text = "🔄 Refresh Player List",
         Callback = function()
-            local searchText = ""
-            if searchBoxRef and searchBoxRef.GetText then
-                searchText = searchBoxRef.GetText()
-            end
-            updateDropdownOptions(searchText)
-            
+            local newList = refreshPlayerList()
             Bdev:Notify({
-                Title = "🔄 Refresh",
-                Content = "Daftar player diperbarui",
+                Title = "Refreshed",
+                Content = string.format("Found %d online players", #newList),
                 Duration = 2
             })
         end
     })
     
-    -- 7. TELEPORT BUTTON (menggunakan CreateButton)
+    -- Teleport button
     Tab:CreateButton({
-        Name = "TeleportButton",
-        Text = "📍 TELEPORT NOW",
+        Name = "TeleportToPlayer",
+        Text = "🚀 Teleport to Selected Player",
         Callback = function()
+            if not selectedPlayer then
+                Bdev:Notify({
+                    Title = "Error",
+                    Content = "❌ No player selected!",
+                    Duration = 2
+                })
+                return
+            end
+            
             teleportToPlayer(selectedPlayer)
         end
     })
     
-    -- 8. FOOTER
+    -- Quick teleport buttons untuk player terdekat
     Tab:CreateLabel({
-        Name = "Footer",
-        Text = "─────────────────────",
-        Color = Color3.fromRGB(140, 140, 150),
-        Alignment = Enum.TextXAlignment.Center
+        Text = "⚡ QUICK TELEPORT",
+        Size = 14,
+        Color = Color3.fromRGB(255, 40, 40)
     })
     
-    -- ===== AUTO REFRESH =====
-    Players.PlayerAdded:Connect(function()
-        task.wait(1)
-        local searchText = searchBoxRef and searchBoxRef.GetText and searchBoxRef.GetText() or ""
-        updateDropdownOptions(searchText)
-    end)
-    
-    Players.PlayerRemoving:Connect(function()
-        local searchText = searchBoxRef and searchBoxRef.GetText and searchBoxRef.GetText() or ""
-        updateDropdownOptions(searchText)
-    end)
-    
-    -- ===== SHARE FUNCTIONS =====
-    Shared.Modules = Shared.Modules or {}
-    Shared.Modules.Teleport = {
-        TeleportToPlayer = teleportToPlayer,
-        GetSelectedPlayer = function() 
-            return selectedPlayer 
-        end,
-        RefreshList = function() 
-            local searchText = searchBoxRef and searchBoxRef.GetText and searchBoxRef.GetText() or ""
-            updateDropdownOptions(searchText) 
-        end,
-        Search = function(text)
-            if searchBoxRef and searchBoxRef.SetText then
-                searchBoxRef.SetText(text)
+    -- Teleport ke player terdekat
+    Tab:CreateButton({
+        Name = "TeleportNearest",
+        Text = "🎯 Teleport to Nearest Player",
+        Callback = function()
+            if not isAlive() then
+                Bdev:Notify({
+                    Title = "Error",
+                    Content = "❌ You are dead!",
+                    Duration = 2
+                })
+                return
             end
-            updateDropdownOptions(text)
+            
+            local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not localHRP then return end
+            
+            local nearestPlayer = nil
+            local nearestDistance = math.huge
+            local localPos = localHRP.Position
+            
+            -- Cari player terdekat
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and isValidTarget(player) then
+                    local targetHRP = getPlayerHRP(player)
+                    if targetHRP then
+                        local dist = (targetHRP.Position - localPos).Magnitude
+                        if dist < nearestDistance then
+                            nearestDistance = dist
+                            nearestPlayer = player
+                        end
+                    end
+                end
+            end
+            
+            if nearestPlayer then
+                teleportToPlayer(nearestPlayer)
+            else
+                Bdev:Notify({
+                    Title = "Error",
+                    Content = "❌ No valid players found nearby!",
+                    Duration = 2
+                })
+            end
         end
-    }
+    })
     
-    print("✅ Teleport module loaded - Pure SimpleGUI Version")
+    -- Teleport ke player terjauh
+    Tab:CreateButton({
+        Name = "TeleportFarthest",
+        Text = "🌍 Teleport to Farthest Player",
+        Callback = function()
+            if not isAlive() then
+                Bdev:Notify({
+                    Title = "Error",
+                    Content = "❌ You are dead!",
+                    Duration = 2
+                })
+                return
+            end
+            
+            local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not localHRP then return end
+            
+            local farthestPlayer = nil
+            local farthestDistance = 0
+            local localPos = localHRP.Position
+            
+            -- Cari player terjauh
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and isValidTarget(player) then
+                    local targetHRP = getPlayerHRP(player)
+                    if targetHRP then
+                        local dist = (targetHRP.Position - localPos).Magnitude
+                        if dist > farthestDistance then
+                            farthestDistance = dist
+                            farthestPlayer = player
+                        end
+                    end
+                end
+            end
+            
+            if farthestPlayer then
+                teleportToPlayer(farthestPlayer)
+            else
+                Bdev:Notify({
+                    Title = "Error",
+                    Content = "❌ No valid players found!",
+                    Duration = 2
+                })
+            end
+        end
+    })
     
-    return function() end
+    -- ===== KEYBIND SYSTEM =====
+    
+    Tab:CreateLabel({
+        Text = "⌨️ KEYBINDS",
+        Size = 14,
+        Color = Color3.fromRGB(255, 40, 40)
+    })
+    
+    -- Keybind untuk teleport ke player terdekat
+    local nearestKeybind = Tab:CreateKeybind({
+        Name = "NearestKeybind",
+        Text = "Teleport Nearest Key",
+        Default = "None",
+        Callback = function(key)
+            if key then
+                Bdev:Notify({
+                    Title = "Keybind Set",
+                    Content = string.format("Nearest teleport: %s", key),
+                    Duration = 2
+                })
+            end
+        end
+    })
+    
+    -- Keybind untuk teleport ke player terpilih
+    local selectedKeybind = Tab:CreateKeybind({
+        Name = "SelectedKeybind",
+        Text = "Teleport Selected Key",
+        Default = "None",
+        Callback = function(key)
+            if key then
+                Bdev:Notify({
+                    Title = "Keybind Set",
+                    Content = string.format("Selected teleport: %s", key),
+                    Duration = 2
+                })
+            end
+        end
+    })
+    
+    -- Keybind handler
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        -- Check nearest keybind
+        if nearestKeybind and nearestKeybind.GetKey then
+            local key = nearestKeybind:GetKey()
+            if key ~= "None" and input.KeyCode == Enum.KeyCode[key] then
+                -- Trigger nearest teleport
+                local button = Tab:FindFirstChild("TeleportNearest")
+                if button and button:IsA("TextButton") then
+                    button:Click()
+                end
+            end
+        end
+        
+        -- Check selected keybind
+        if selectedKeybind and selectedKeybind.GetKey then
+            local key = selectedKeybind:GetKey()
+            if key ~= "None" and input.KeyCode == Enum.KeyCode[key] then
+                -- Trigger selected teleport
+                local button = Tab:FindFirstChild("TeleportToPlayer")
+                if button and button:IsA("TextButton") then
+                    button:Click()
+                end
+            end
+        end
+    end)
+    
+    -- ===== STATUS DISPLAY =====
+    
+    -- Live player count
+    local playerCountLabel = Tab:CreateLabel({
+        Text = "👥 Online: 0 | Alive: 0",
+        Size = 12,
+        Color = Color3.fromRGB(150, 150, 150)
+    })
+    
+    -- Update player count periodically
+    spawn(function()
+        while true do
+            local total = #Players:GetPlayers() - 1 -- Exclude self
+            local alive = 0
+            
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and isValidTarget(player) then
+                    alive = alive + 1
+                end
+            end
+            
+            playerCountLabel.Text = string.format("👥 Online: %d | Alive: %d", total, alive)
+            task.wait(2)
+        end
+    end)
+    
+    -- ===== CLEANUP =====
+    
+    -- Cleanup when tab is destroyed
+    if Tab.Destroy then
+        local oldDestroy = Tab.Destroy
+        Tab.Destroy = function()
+            if refreshConnection then
+                refreshConnection:Disconnect()
+                refreshConnection = nil
+            end
+            oldDestroy(Tab)
+        end
+    end
+    
+    print("✅ Teleport to Player Module Loaded")
 end
 
-return Teleport
+return TeleportTab
