@@ -54,7 +54,7 @@ SimpleGUI.Themes = {
         ButtonHover = Color3.fromRGB(45, 45, 55),
         ButtonGlow = Color3.fromRGB(255, 40, 40, 0.15),
         
-        InputBg = Color3.fromRGB(18, 18, 25),
+        InputBg = Color3.fromRGB(192, 72, 50),
         InputBgFocus = Color3.fromRGB(28, 28, 38),
         InputBorder = Color3.fromRGB(255, 40, 40, 0.3),
         
