@@ -104,13 +104,13 @@ function AutoFarm.Init(Dependencies)
     if plantRemote then
         Bdev:Notify({
             Title = "PlantCrop Ready",
-            Content = "✅ Remote PlantCrop ditemukan!",
+            Content = "✅Join Discord ABCD",
             Duration = 3
         })
     else
         Bdev:Notify({
             Title = "Warning",
-            Content = "⚠️ Remote PlantCrop tidak ditemukan!",
+            Content = "⚠️Kamu Belum Join Discord",
             Duration = 4
         })
     end
