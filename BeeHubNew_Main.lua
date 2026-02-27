@@ -1,5 +1,5 @@
 -- ==============================================
--- 🎮 BEEHUB v4.0 - MODULAR SYSTEM (MAIN)
+-- 🎮 BeeHub v1.0 - MODULAR SYSTEM (MAIN)
 -- ==============================================
 
 -- Configuration
@@ -23,7 +23,7 @@ local GUI = SimpleGUI.new()
 
 -- Create main window dengan nama BEEHUB (bukan NEO HUB)
 local Window = GUI:CreateWindow({
-    Name = "⚡ BEEHUB v4.0 - Futuristic Edition",  -- ← Kembali ke BEEHUB
+    Name = "⚡ BeeHub v1.0 - Freemium",  -- ← Kembali ke BEEHUB
     Size = UDim2.new(0, 700, 0, 500)
 })
 
