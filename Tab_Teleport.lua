@@ -109,7 +109,7 @@ function Teleport.Init(Dependencies)
                 playerDropdownRef.SetValue("-- Tidak ada player --")
             end
             if infoLabelRef then
-                infoLabelRef:SetText("➤ Target: Tidak ada player online")
+                infoLabelRef.Text = "➤ Target: Tidak ada player online"  -- ← LANGSUNG .Text
             end
             selectedPlayer = nil
         else
@@ -131,14 +131,14 @@ function Teleport.Init(Dependencies)
                         selectedPlayer = getPlayerFromDisplay(players[1])
                         playerDropdownRef.SetValue(players[1])
                         if infoLabelRef then
-                            infoLabelRef:SetText("➤ Target: 👤 " .. selectedPlayer.Name)
+                            infoLabelRef.Text = "➤ Target: 👤 " .. selectedPlayer.Name  -- ← LANGSUNG .Text
                         end
                     end
                 else
                     selectedPlayer = getPlayerFromDisplay(players[1])
                     playerDropdownRef.SetValue(players[1])
                     if infoLabelRef then
-                        infoLabelRef:SetText("➤ Target: 👤 " .. selectedPlayer.Name)
+                        infoLabelRef.Text = "➤ Target: 👤 " .. selectedPlayer.Name  -- ← LANGSUNG .Text
                     end
                 end
             end
@@ -163,16 +163,27 @@ function Teleport.Init(Dependencies)
         Alignment = Enum.TextXAlignment.Left
     })
     
-    -- 3. SEARCH BAR (menggunakan CreateSearchBar dari SimpleGUI)
-    searchBoxRef = Tab:CreateSearchBar({
-        Name = "PlayerSearch",
+    -- 3. SEARCH BAR (menggunakan CreateInput sebagai alternatif CreateSearchBar)
+    local searchInput = Tab:CreateInput({
+        Name = "SearchInput",
         Text = "🔍 Cari Player",
-        Placeholder = "Ketik nama player...",
-        Data = getPlayerList(),
-        Callback = function(searchText)
-            updateDropdownOptions(searchText)
+        PlaceholderText = "Ketik nama player...",
+        Callback = function(value)
+            updateDropdownOptions(value)
         end
     })
+    
+    -- Simpan referensi untuk search
+    searchBoxRef = {
+        GetText = function() 
+            return searchInput and searchInput.GetValue and searchInput.GetValue() or "" 
+        end,
+        SetText = function(text)
+            if searchInput and searchInput.SetValue then
+                searchInput.SetValue(text)
+            end
+        end
+    }
     
     -- 4. DROPDOWN LABEL
     Tab:CreateLabel({
@@ -194,12 +205,12 @@ function Teleport.Init(Dependencies)
             if value == "-- Tidak ada player --" then
                 selectedPlayer = nil
                 if infoLabelRef then
-                    infoLabelRef:SetText("➤ Target: Belum dipilih")
+                    infoLabelRef.Text = "➤ Target: Belum dipilih"  -- ← LANGSUNG .Text
                 end
             else
                 selectedPlayer = getPlayerFromDisplay(value)
                 if infoLabelRef then
-                    infoLabelRef:SetText("➤ Target: " .. value)
+                    infoLabelRef.Text = "➤ Target: " .. value  -- ← LANGSUNG .Text
                 end
                 
                 Bdev:Notify({
@@ -218,7 +229,7 @@ function Teleport.Init(Dependencies)
             playerDropdownRef.SetValue(initialPlayers[1])
         end
         if infoLabelRef then
-            infoLabelRef:SetText("➤ Target: " .. initialPlayers[1])
+            infoLabelRef.Text = "➤ Target: " .. initialPlayers[1]  -- ← LANGSUNG .Text
         end
     end
     
@@ -250,7 +261,7 @@ function Teleport.Init(Dependencies)
         end
     })
     
-    -- 8. SPACER / FOOTER
+    -- 8. FOOTER
     Tab:CreateLabel({
         Name = "Footer",
         Text = "─────────────────────",
