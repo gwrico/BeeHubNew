@@ -566,7 +566,7 @@ function SimpleGUI:CreateWindow(options)
     
     self.Windows[windowData.Name] = windowObj
     
-    -- RESIZE HANDLE
+    -- RESIZE HANDLE - VERSI DIPERBAIKI
     do
         local ResizeHandle = Instance.new("TextButton")
         ResizeHandle.Name = "ResizeHandle"
@@ -581,18 +581,36 @@ function SimpleGUI:CreateWindow(options)
         ResizeHandle.Parent = MainFrame
         
         local isResizing = false
-        local resizeStartPos
+        local resizeStartPos = Vector2.new(0, 0)  -- Gunakan Vector2, inisialisasi
         local resizeStartSize
         
         ResizeHandle.MouseButton1Down:Connect(function(input)
             isResizing = true
-            resizeStartPos = input.Position
+            -- Pastikan input.Position ada
+            if input and input.Position then
+                resizeStartPos = Vector2.new(input.Position.X, input.Position.Y)
+            else
+                -- Fallback jika input tidak valid
+                local mousePos = UserInputService:GetMouseLocation()
+                resizeStartPos = Vector2.new(mousePos.X, mousePos.Y)
+            end
             resizeStartSize = MainFrame.Size
         end)
         
-        UserInputService.InputChanged:Connect(function(input)
-            if isResizing and input.UserInputType == Enum.UserInputType.MouseMovement then
-                local delta = input.Position - resizeStartPos
+        -- Gunakan InputChanged dengan koneksi yang bisa di-disconnect
+        local resizeConnection = UserInputService.InputChanged:Connect(function(input)
+            if not isResizing then return end
+            if input.UserInputType == Enum.UserInputType.MouseMovement then
+                -- Validasi resizeStartPos
+                if not resizeStartPos then return end
+                
+                local currentPos = Vector2.new(input.Position.X, input.Position.Y)
+                local delta = currentPos - resizeStartPos
+                
+                -- Validasi resizeStartSize
+                if not resizeStartSize then return end
+                
+                -- Hitung ukuran baru
                 local newWidth = math.clamp(
                     resizeStartSize.X.Offset + delta.X,
                     windowData.MinSize.X.Offset,
@@ -604,6 +622,7 @@ function SimpleGUI:CreateWindow(options)
                     windowData.MaxSize.Y.Offset
                 )
                 
+                -- Terapkan ukuran baru
                 MainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
             end
         end)
@@ -611,8 +630,21 @@ function SimpleGUI:CreateWindow(options)
         UserInputService.InputEnded:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 and isResizing then
                 isResizing = false
+                resizeStartPos = nil  -- Reset
             end
         end)
+        
+        -- Cleanup jika window di-destroy
+        windowObj.Destroy = (function(oldDestroy)
+            return function()
+                if resizeConnection then
+                    resizeConnection:Disconnect()
+                end
+                if oldDestroy then
+                    oldDestroy()
+                end
+            end
+        end)(windowObj.Destroy)
         
         windowObj.ResizeHandle = ResizeHandle
     end
