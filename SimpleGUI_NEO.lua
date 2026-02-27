@@ -755,7 +755,7 @@ function SimpleGUI:CreateWindow(options)
                 Label.TextColor3 = opts.Color or theme.TextSecondary
                 Label.BackgroundTransparency = 1
                 Label.TextSize = opts.Size or 13 * scale
-                -- ABaIKAN OPSI BOLD, SELALU PAKAI GOTHAMBLACK
+                -- ABAIKAN OPSI BOLD, SELALU PAKAI GOTHAMBLACK
                 Label.Font = Enum.Font.GothamBlack
                 Label.TextXAlignment = opts.Alignment or Enum.TextXAlignment.Left
                 Label.LayoutOrder = #self.Elements + 1
@@ -1461,6 +1461,519 @@ function SimpleGUI:CreateWindow(options)
                                 end
                             end
                         end
+                    end
+                }
+            end,
+            
+            -- ===== CREATE TEXTBOX (SINGLE LINE INPUT) =====
+            CreateTextBox = function(self, options)
+                local opts = options or {}
+                local scale = windowData.Scale
+                
+                -- TextBox frame utama
+                local TextBoxFrame = Instance.new("Frame")
+                TextBoxFrame.Name = opts.Name or "TextBox_" .. #self.Elements + 1
+                TextBoxFrame.Size = UDim2.new(0.95, 0, 0, 75 * scale)
+                TextBoxFrame.BackgroundColor3 = theme.ContentCard
+                TextBoxFrame.BackgroundTransparency = 0
+                TextBoxFrame.BorderSizePixel = 2
+                TextBoxFrame.BorderColor3 = theme.BorderLight
+                TextBoxFrame.LayoutOrder = #self.Elements + 1
+                TextBoxFrame.Parent = TabContent
+                
+                -- Rounded corners
+                local FrameCorner = Instance.new("UICorner")
+                FrameCorner.CornerRadius = UDim.new(0, 8 * scale)
+                FrameCorner.Parent = TextBoxFrame
+                
+                -- Inner frame
+                local InnerFrame = Instance.new("Frame")
+                InnerFrame.Name = "InnerFrame"
+                InnerFrame.Size = UDim2.new(1, -4, 1, -4)
+                InnerFrame.Position = UDim2.new(0, 2, 0, 2)
+                InnerFrame.BackgroundColor3 = theme.ContentCard
+                InnerFrame.BackgroundTransparency = 0
+                InnerFrame.BorderSizePixel = 0
+                InnerFrame.Parent = TextBoxFrame
+                
+                local InnerCorner = Instance.new("UICorner")
+                InnerCorner.CornerRadius = UDim.new(0, 6 * scale)
+                InnerCorner.Parent = InnerFrame
+                
+                -- Label
+                local TextBoxLabel = Instance.new("TextLabel")
+                TextBoxLabel.Name = "TextBoxLabel"
+                TextBoxLabel.Size = UDim2.new(1, -26, 0, 22 * scale)
+                TextBoxLabel.Position = UDim2.new(0, 13 * scale, 0, 8 * scale)
+                TextBoxLabel.Text = opts.Text or opts.Name or "Input Text"
+                TextBoxLabel.TextColor3 = theme.Text
+                TextBoxLabel.BackgroundTransparency = 1
+                TextBoxLabel.TextSize = 13 * scale
+                TextBoxLabel.Font = Enum.Font.GothamBlack
+                TextBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+                TextBoxLabel.Parent = InnerFrame
+                
+                -- Clear button (optional)
+                local ClearButton = Instance.new("TextButton")
+                ClearButton.Name = "ClearButton"
+                ClearButton.Size = UDim2.new(0, 22 * scale, 0, 22 * scale)
+                ClearButton.Position = UDim2.new(1, -35 * scale, 0, 8 * scale)
+                ClearButton.Text = "✕"
+                ClearButton.TextColor3 = theme.TextMuted
+                ClearButton.BackgroundTransparency = 1
+                ClearButton.TextSize = 14 * scale
+                ClearButton.Font = Enum.Font.Gotham
+                ClearButton.Visible = false
+                ClearButton.Parent = InnerFrame
+                
+                -- TextBox
+                local TextBox = Instance.new("TextBox")
+                TextBox.Name = "TextBox"
+                TextBox.Size = UDim2.new(1, -26, 0, 34 * scale)
+                TextBox.Position = UDim2.new(0, 13 * scale, 0, 34 * scale)
+                TextBox.Text = opts.DefaultText or opts.PlaceholderText or ""
+                TextBox.PlaceholderText = opts.PlaceholderText or "Ketik sesuatu..."
+                TextBox.PlaceholderColor3 = theme.TextMuted
+                TextBox.TextColor3 = theme.Text
+                TextBox.BackgroundColor3 = theme.InputBg
+                TextBox.BackgroundTransparency = 0
+                TextBox.TextSize = 13 * scale
+                TextBox.Font = Enum.Font.Gotham
+                TextBox.TextXAlignment = Enum.TextXAlignment.Left
+                TextBox.ClearTextOnFocus = false
+                TextBox.Parent = InnerFrame
+                
+                local TextBoxCorner = Instance.new("UICorner")
+                TextBoxCorner.CornerRadius = UDim.new(0, 6 * scale)
+                TextBoxCorner.Parent = TextBox
+                
+                -- Efek glow saat focus
+                local TextBoxGlow = createGlow(TextBox, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
+                TextBoxGlow.ImageTransparency = 1
+                
+                -- Character count (optional)
+                local CharCount = Instance.new("TextLabel")
+                CharCount.Name = "CharCount"
+                CharCount.Size = UDim2.new(0, 50, 0, 20)
+                CharCount.Position = UDim2.new(1, -60, 0, 34)
+                CharCount.Text = "0/" .. (opts.MaxLength or "∞")
+                CharCount.TextColor3 = theme.TextMuted
+                CharCount.BackgroundTransparency = 1
+                CharCount.TextSize = 10 * scale
+                CharCount.Font = Enum.Font.Gotham
+                CharCount.TextXAlignment = Enum.TextXAlignment.Right
+                CharCount.Visible = opts.ShowCount or false
+                CharCount.Parent = InnerFrame
+                
+                -- Variables
+                local maxLength = opts.MaxLength or 0
+                local textValue = opts.DefaultText or ""
+                
+                -- Function to update character count
+                local function updateCharCount()
+                    if opts.ShowCount then
+                        local currentLength = string.len(TextBox.Text)
+                        CharCount.Text = currentLength .. "/" .. (maxLength > 0 and maxLength or "∞")
+                        
+                        if maxLength > 0 and currentLength >= maxLength then
+                            CharCount.TextColor3 = theme.Error
+                        else
+                            CharCount.TextColor3 = theme.TextMuted
+                        end
+                    end
+                end
+                
+                -- Focus events
+                TextBox.Focused:Connect(function()
+                    tween(TextBox, {BackgroundColor3 = theme.InputBgFocus}, 0.15)
+                    tween(TextBoxFrame, {BorderColor3 = theme.BorderRed}, 0.15)
+                    tween(TextBoxGlow, {ImageTransparency = 0.5}, 0.15)
+                    
+                    if string.len(TextBox.Text) > 0 then
+                        ClearButton.Visible = true
+                    end
+                end)
+                
+                TextBox.FocusLost:Connect(function(enterPressed)
+                    tween(TextBox, {BackgroundColor3 = theme.InputBg}, 0.15)
+                    tween(TextBoxFrame, {BorderColor3 = theme.BorderLight}, 0.15)
+                    tween(TextBoxGlow, {ImageTransparency = 1}, 0.15)
+                    ClearButton.Visible = false
+                    
+                    textValue = TextBox.Text
+                    
+                    if opts.Callback then
+                        pcall(opts.Callback, TextBox.Text, enterPressed)
+                    end
+                end)
+                
+                -- Text changed
+                TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+                    if maxLength > 0 and string.len(TextBox.Text) > maxLength then
+                        TextBox.Text = string.sub(TextBox.Text, 1, maxLength)
+                    end
+                    
+                    updateCharCount()
+                    
+                    if opts.LiveUpdate and opts.Callback then
+                        pcall(opts.Callback, TextBox.Text, false)
+                    end
+                    
+                    if string.len(TextBox.Text) > 0 then
+                        ClearButton.Visible = TextBox:IsFocused()
+                    else
+                        ClearButton.Visible = false
+                    end
+                end)
+                
+                -- Clear button click
+                ClearButton.MouseButton1Click:Connect(function()
+                    TextBox.Text = ""
+                    TextBox:CaptureFocus()
+                end)
+                
+                -- Hover effects
+                ClearButton.MouseEnter:Connect(function()
+                    tween(ClearButton, {TextColor3 = theme.Error}, 0.15)
+                end)
+                
+                ClearButton.MouseLeave:Connect(function()
+                    tween(ClearButton, {TextColor3 = theme.TextMuted}, 0.15)
+                end)
+                
+                TextBoxFrame.MouseEnter:Connect(function()
+                    if not isMobile and not TextBox:IsFocused() then
+                        tween(TextBoxFrame, {BackgroundColor3 = theme.ContentBgLight}, 0.15)
+                    end
+                end)
+                
+                TextBoxFrame.MouseLeave:Connect(function()
+                    if not isMobile and not TextBox:IsFocused() then
+                        tween(TextBoxFrame, {BackgroundColor3 = theme.ContentCard}, 0.15)
+                    end
+                end)
+                
+                -- Validation types
+                if opts.Validation then
+                    TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+                        local text = TextBox.Text
+                        
+                        if opts.Validation == "number" then
+                            TextBox.Text = text:gsub("[^0-9.-]", "")
+                        elseif opts.Validation == "letters" then
+                            TextBox.Text = text:gsub("[^a-zA-Z]", "")
+                        elseif opts.Validation == "alphanumeric" then
+                            TextBox.Text = text:gsub("[^a-zA-Z0-9]", "")
+                        elseif opts.Validation == "email" then
+                            -- No automatic filtering, just visual indicator
+                            local isValid = string.match(text, "^[%w._-]+@[%w.-]+%.[%w]+$") ~= nil
+                            if text ~= "" and not isValid then
+                                TextBox.TextColor3 = theme.Error
+                            else
+                                TextBox.TextColor3 = theme.Text
+                            end
+                        end
+                    end)
+                end
+                
+                table.insert(self.Elements, TextBoxFrame)
+                
+                return {
+                    Frame = TextBoxFrame,
+                    TextBox = TextBox,
+                    GetText = function() return TextBox.Text end,
+                    SetText = function(text)
+                        TextBox.Text = tostring(text)
+                        textValue = tostring(text)
+                    end,
+                    Clear = function()
+                        TextBox.Text = ""
+                    end,
+                    Focus = function()
+                        TextBox:CaptureFocus()
+                    end,
+                    IsFocused = function()
+                        return TextBox:IsFocused()
+                    end
+                }
+            end,
+            
+            -- ===== CREATE INPUT (VERSI LEBIH LENGKAP DENGAN TIPE) =====
+            CreateInput = function(self, options)
+                local opts = options or {}
+                local scale = windowData.Scale
+                
+                -- Main frame
+                local InputFrame = Instance.new("Frame")
+                InputFrame.Name = opts.Name or "Input_" .. #self.Elements + 1
+                InputFrame.Size = UDim2.new(0.95, 0, 0, 85 * scale)
+                InputFrame.BackgroundColor3 = theme.ContentCard
+                InputFrame.BackgroundTransparency = 0
+                InputFrame.BorderSizePixel = 2
+                InputFrame.BorderColor3 = theme.BorderLight
+                InputFrame.LayoutOrder = #self.Elements + 1
+                InputFrame.Parent = TabContent
+                
+                -- Rounded corners
+                local FrameCorner = Instance.new("UICorner")
+                FrameCorner.CornerRadius = UDim.new(0, 8 * scale)
+                FrameCorner.Parent = InputFrame
+                
+                -- Inner frame
+                local InnerFrame = Instance.new("Frame")
+                InnerFrame.Name = "InnerFrame"
+                InnerFrame.Size = UDim2.new(1, -4, 1, -4)
+                InnerFrame.Position = UDim2.new(0, 2, 0, 2)
+                InnerFrame.BackgroundColor3 = theme.ContentCard
+                InnerFrame.BackgroundTransparency = 0
+                InnerFrame.BorderSizePixel = 0
+                InnerFrame.Parent = InputFrame
+                
+                local InnerCorner = Instance.new("UICorner")
+                InnerCorner.CornerRadius = UDim.new(0, 6 * scale)
+                InnerCorner.Parent = InnerFrame
+                
+                -- Label
+                local InputLabel = Instance.new("TextLabel")
+                InputLabel.Name = "InputLabel"
+                InputLabel.Size = UDim2.new(0.5, -13, 0, 22 * scale)
+                InputLabel.Position = UDim2.new(0, 13 * scale, 0, 8 * scale)
+                InputLabel.Text = opts.Text or opts.Name or "Input"
+                InputLabel.TextColor3 = theme.Text
+                InputLabel.BackgroundTransparency = 1
+                InputLabel.TextSize = 13 * scale
+                InputLabel.Font = Enum.Font.GothamBlack
+                InputLabel.TextXAlignment = Enum.TextXAlignment.Left
+                InputLabel.Parent = InnerFrame
+                
+                -- Value display (untuk input type tertentu)
+                local ValueDisplay = Instance.new("TextLabel")
+                ValueDisplay.Name = "ValueDisplay"
+                ValueDisplay.Size = UDim2.new(0.4, -10, 0, 22 * scale)
+                ValueDisplay.Position = UDim2.new(0.6, 0, 0, 8 * scale)
+                ValueDisplay.Text = opts.DefaultValue or ""
+                ValueDisplay.TextColor3 = theme.Accent
+                ValueDisplay.BackgroundTransparency = 1
+                ValueDisplay.TextSize = 13 * scale
+                ValueDisplay.Font = Enum.Font.GothamBlack
+                ValueDisplay.TextXAlignment = Enum.TextXAlignment.Right
+                ValueDisplay.Visible = opts.InputType == "number" or opts.InputType == "slider"
+                ValueDisplay.Parent = InnerFrame
+                
+                -- Input field
+                local InputBox = Instance.new("TextBox")
+                InputBox.Name = "InputBox"
+                InputBox.Size = UDim2.new(1, -26, 0, 34 * scale)
+                InputBox.Position = UDim2.new(0, 13 * scale, 0, 34 * scale)
+                InputBox.Text = opts.DefaultValue or ""
+                InputBox.PlaceholderText = opts.PlaceholderText or "Masukkan nilai..."
+                InputBox.PlaceholderColor3 = theme.TextMuted
+                InputBox.TextColor3 = theme.Text
+                InputBox.BackgroundColor3 = theme.InputBg
+                InputBox.BackgroundTransparency = 0
+                InputBox.TextSize = 13 * scale
+                InputBox.Font = Enum.Font.Gotham
+                InputBox.TextXAlignment = Enum.TextXAlignment.Left
+                InputBox.ClearTextOnFocus = false
+                InputBox.Parent = InnerFrame
+                
+                local InputBoxCorner = Instance.new("UICorner")
+                InputBoxCorner.CornerRadius = UDim.new(0, 6 * scale)
+                InputBoxCorner.Parent = InputBox
+                
+                -- Efek glow
+                local InputGlow = createGlow(InputBox, theme.AccentGlow, UDim2.new(1, 8, 1, 8))
+                InputGlow.ImageTransparency = 1
+                
+                -- Unit label (untuk number input)
+                local UnitLabel = Instance.new("TextLabel")
+                UnitLabel.Name = "UnitLabel"
+                UnitLabel.Size = UDim2.new(0, 30, 0, 34)
+                UnitLabel.Position = UDim2.new(1, -40, 0, 34)
+                UnitLabel.Text = opts.Unit or ""
+                UnitLabel.TextColor3 = theme.Accent
+                UnitLabel.BackgroundTransparency = 1
+                UnitLabel.TextSize = 12 * scale
+                UnitLabel.Font = Enum.Font.Gotham
+                UnitLabel.Visible = opts.Unit and true or false
+                UnitLabel.Parent = InnerFrame
+                
+                -- Increment buttons (untuk number input)
+                local IncrementFrame = Instance.new("Frame")
+                IncrementFrame.Name = "IncrementFrame"
+                IncrementFrame.Size = UDim2.new(0, 60, 0, 34)
+                IncrementFrame.Position = UDim2.new(1, -70, 0, 34)
+                IncrementFrame.BackgroundTransparency = 1
+                IncrementFrame.Visible = opts.InputType == "number" and opts.ShowControls ~= false
+                IncrementFrame.Parent = InnerFrame
+                
+                if IncrementFrame.Visible then
+                    -- Plus button
+                    local PlusButton = Instance.new("TextButton")
+                    PlusButton.Name = "PlusButton"
+                    PlusButton.Size = UDim2.new(0.5, -1, 1, 0)
+                    PlusButton.Position = UDim2.new(0.5, 1, 0, 0)
+                    PlusButton.Text = "+"
+                    PlusButton.TextColor3 = theme.Text
+                    PlusButton.BackgroundColor3 = theme.Button
+                    PlusButton.BackgroundTransparency = 0
+                    PlusButton.TextSize = 16 * scale
+                    PlusButton.Font = Enum.Font.Gotham
+                    PlusButton.AutoButtonColor = false
+                    PlusButton.Parent = IncrementFrame
+                    
+                    local PlusCorner = Instance.new("UICorner")
+                    PlusCorner.CornerRadius = UDim.new(0, 6 * scale)
+                    PlusCorner.Parent = PlusButton
+                    
+                    -- Minus button
+                    local MinusButton = Instance.new("TextButton")
+                    MinusButton.Name = "MinusButton"
+                    MinusButton.Size = UDim2.new(0.5, -1, 1, 0)
+                    MinusButton.Position = UDim2.new(0, 0, 0, 0)
+                    MinusButton.Text = "-"
+                    MinusButton.TextColor3 = theme.Text
+                    MinusButton.BackgroundColor3 = theme.Button
+                    MinusButton.BackgroundTransparency = 0
+                    MinusButton.TextSize = 16 * scale
+                    MinusButton.Font = Enum.Font.Gotham
+                    MinusButton.AutoButtonColor = false
+                    MinusButton.Parent = IncrementFrame
+                    
+                    local MinusCorner = Instance.new("UICorner")
+                    MinusCorner.CornerRadius = UDim.new(0, 6 * scale)
+                    MinusCorner.Parent = MinusButton
+                    
+                    -- Adjust InputBox size
+                    InputBox.Size = UDim2.new(1, -90, 0, 34)
+                    
+                    -- Variables
+                    local minValue = opts.Min or -math.huge
+                    local maxValue = opts.Max or math.huge
+                    local step = opts.Step or 1
+                    
+                    -- Plus button click
+                    PlusButton.MouseButton1Click:Connect(function()
+                        local currentValue = tonumber(InputBox.Text) or 0
+                        local newValue = math.min(currentValue + step, maxValue)
+                        InputBox.Text = tostring(newValue)
+                        ValueDisplay.Text = tostring(newValue)
+                        
+                        if opts.Callback then
+                            pcall(opts.Callback, newValue)
+                        end
+                    end)
+                    
+                    -- Minus button click
+                    MinusButton.MouseButton1Click:Connect(function()
+                        local currentValue = tonumber(InputBox.Text) or 0
+                        local newValue = math.max(currentValue - step, minValue)
+                        InputBox.Text = tostring(newValue)
+                        ValueDisplay.Text = tostring(newValue)
+                        
+                        if opts.Callback then
+                            pcall(opts.Callback, newValue)
+                        end
+                    end)
+                    
+                    -- Hover effects
+                    PlusButton.MouseEnter:Connect(function()
+                        tween(PlusButton, {BackgroundColor3 = theme.ButtonHover}, 0.15)
+                    end)
+                    
+                    PlusButton.MouseLeave:Connect(function()
+                        tween(PlusButton, {BackgroundColor3 = theme.Button}, 0.15)
+                    end)
+                    
+                    MinusButton.MouseEnter:Connect(function()
+                        tween(MinusButton, {BackgroundColor3 = theme.ButtonHover}, 0.15)
+                    end)
+                    
+                    MinusButton.MouseLeave:Connect(function()
+                        tween(MinusButton, {BackgroundColor3 = theme.Button}, 0.15)
+                    end)
+                end
+                
+                -- Focus events
+                InputBox.Focused:Connect(function()
+                    tween(InputBox, {BackgroundColor3 = theme.InputBgFocus}, 0.15)
+                    tween(InputFrame, {BorderColor3 = theme.BorderRed}, 0.15)
+                    tween(InputGlow, {ImageTransparency = 0.5}, 0.15)
+                end)
+                
+                InputBox.FocusLost:Connect(function(enterPressed)
+                    tween(InputBox, {BackgroundColor3 = theme.InputBg}, 0.15)
+                    tween(InputFrame, {BorderColor3 = theme.BorderLight}, 0.15)
+                    tween(InputGlow, {ImageTransparency = 1}, 0.15)
+                    
+                    -- Validation based on input type
+                    if opts.InputType == "number" then
+                        local numValue = tonumber(InputBox.Text)
+                        if numValue then
+                            if opts.Min and numValue < opts.Min then
+                                numValue = opts.Min
+                            end
+                            if opts.Max and numValue > opts.Max then
+                                numValue = opts.Max
+                            end
+                            InputBox.Text = tostring(numValue)
+                            ValueDisplay.Text = tostring(numValue)
+                        else
+                            InputBox.Text = opts.DefaultValue or "0"
+                            ValueDisplay.Text = opts.DefaultValue or "0"
+                        end
+                    end
+                    
+                    if opts.Callback then
+                        pcall(opts.Callback, InputBox.Text, enterPressed)
+                    end
+                end)
+                
+                -- Text changed
+                InputBox:GetPropertyChangedSignal("Text"):Connect(function()
+                    if opts.InputType == "number" then
+                        -- Filter hanya angka
+                        InputBox.Text = InputBox.Text:gsub("[^0-9.-]", "")
+                    end
+                    
+                    ValueDisplay.Text = InputBox.Text
+                    
+                    if opts.LiveUpdate and opts.Callback then
+                        pcall(opts.Callback, InputBox.Text, false)
+                    end
+                end)
+                
+                -- Hover effect on frame
+                InputFrame.MouseEnter:Connect(function()
+                    if not isMobile and not InputBox:IsFocused() then
+                        tween(InputFrame, {BackgroundColor3 = theme.ContentBgLight}, 0.15)
+                    end
+                end)
+                
+                InputFrame.MouseLeave:Connect(function()
+                    if not isMobile and not InputBox:IsFocused() then
+                        tween(InputFrame, {BackgroundColor3 = theme.ContentCard}, 0.15)
+                    end
+                end)
+                
+                table.insert(self.Elements, InputFrame)
+                
+                return {
+                    Frame = InputFrame,
+                    InputBox = InputBox,
+                    GetValue = function() return InputBox.Text end,
+                    SetValue = function(value)
+                        InputBox.Text = tostring(value)
+                        ValueDisplay.Text = tostring(value)
+                    end,
+                    GetNumber = function()
+                        return tonumber(InputBox.Text) or 0
+                    end,
+                    Clear = function()
+                        InputBox.Text = ""
+                    end,
+                    Focus = function()
+                        InputBox:CaptureFocus()
                     end
                 }
             end,
