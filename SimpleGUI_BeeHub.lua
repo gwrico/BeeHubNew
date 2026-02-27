@@ -3284,7 +3284,7 @@ function SimpleGUI:CreateWindow(options)
     Outline.Color = Color3.fromRGB(0, 0, 0)  -- Hitam
     Outline.Thickness = 3  -- Ketebalan 3 pixel
     Outline.LineJoinMode = Enum.LineJoinMode.Round  -- Sudut membulat
-    Outline.Transparency = 1
+    Outline.Transparency = 0.4
     Outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Outline.Parent = MinimizedIcon
 
@@ -3296,7 +3296,7 @@ function SimpleGUI:CreateWindow(options)
     Glow.BackgroundTransparency = 1
     Glow.Image = "rbxassetid://13110549987"
     Glow.ImageColor3 = Color3.fromRGB(0, 0, 0)  -- Hitam
-    Glow.ImageTransparency = 0
+    Glow.ImageTransparency = 0.4
     Glow.ScaleType = Enum.ScaleType.Slice
     Glow.SliceCenter = Rect.new(10, 10, 10, 10)
     Glow.ZIndex = -1
