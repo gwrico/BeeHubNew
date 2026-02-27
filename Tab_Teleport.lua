@@ -254,7 +254,7 @@ function TeleportTab.Init(Dependencies)
         Text = "🚀 Teleport to Selected Player",
         Callback = function()
             -- Debug: cek nilai selectedPlayer
-            print("Selected Player:", selectedPlayer)
+            --print("Selected Player:", selectedPlayer)
             
             if not selectedPlayer then
                 Bdev:Notify({
@@ -327,7 +327,7 @@ function TeleportTab.Init(Dependencies)
         end
     end
     
-    print("✅ Teleport to Player Module Loaded")
+    --print("✅ Teleport to Player Module Loaded")
 end
 
 return TeleportTab

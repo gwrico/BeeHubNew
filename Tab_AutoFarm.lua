@@ -266,7 +266,7 @@ function AutoFarm.Init(Dependencies)
         end
     })
     
-    print("✅ AutoFarm Posisi dan Harverst Ready - BeeHub")
+    --print("✅ AutoFarm Posisi dan Harverst Ready - BeeHub")
 end
 
 return AutoFarm

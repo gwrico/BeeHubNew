@@ -21,8 +21,8 @@ function ShopAutoBuy.Init(Dependencies)
     end
     
     -- ===== DEBUG: CEK METHOD TAB =====
-    print("=== SHOP MODULE DEBUG ===")
-    print("✅ Tab diterima, type:", typeof(Tab))
+    --print("=== SHOP MODULE DEBUG ===")
+    --print("✅ Tab diterima, type:", typeof(Tab))
     
     local methods = {}
     for k, v in pairs(Tab) do
@@ -30,8 +30,8 @@ function ShopAutoBuy.Init(Dependencies)
             table.insert(methods, tostring(k))
         end
     end
-    print("Method tersedia (" .. #methods .. "):", table.concat(methods, ", "))
-    print("==========================")
+    --print("Method tersedia (" .. #methods .. "):", table.concat(methods, ", "))
+    --print("==========================")
     
     -- ===== AMBIL THEME =====
     local theme
@@ -103,7 +103,7 @@ function ShopAutoBuy.Init(Dependencies)
                 Duration = duration or 3
             })
         else
-            print(string.format("[%s] %s", title, content))
+            --print(string.format("[%s] %s", title, content))
         end
     end
     
@@ -310,7 +310,7 @@ function ShopAutoBuy.Init(Dependencies)
         }
     end
     
-    print("✅ Shop module loaded (tanpa section title)")
+    --print("✅ Shop module loaded (tanpa section title)")
     return cleanup
 end
 

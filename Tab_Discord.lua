@@ -175,7 +175,7 @@ function DiscordTab.Init(Dependencies)
         Color = Color3.fromRGB(150, 150, 150)
     })
     
-    print("✅ Discord Button Module Loaded")
+    --print("✅ Discord Button Module Loaded")
 end
 
 return DiscordTab
