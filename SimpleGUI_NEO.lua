@@ -122,18 +122,46 @@ local function tween(object, properties, duration, easingStyle, easingDirection)
 end
 
 local function createGlow(parent, color, size)
+    -- Validasi parent
+    if not parent or typeof(parent) ~= "Instance" then
+        warn("createGlow: parent tidak valid")
+        return nil
+    end
+    
+    -- Validasi size
+    local glowSize = size
+    if typeof(glowSize) ~= "UDim2" then
+        glowSize = UDim2.new(1, 20, 1, 20)  -- default size
+    end
+    
+    -- Validasi color
+    local glowColor = color
+    if typeof(glowColor) ~= "Color3" then
+        glowColor = Color3.fromRGB(255, 40, 40)
+    end
+    
     local glow = Instance.new("ImageLabel")
     glow.Name = "Glow"
-    glow.Size = size or UDim2.new(1, 20, 1, 20)
+    glow.Size = glowSize
     glow.Position = UDim2.new(0, -10, 0, -10)
     glow.BackgroundTransparency = 1
     glow.Image = "rbxassetid://13110549987"
-    glow.ImageColor3 = color or Color3.fromRGB(255, 40, 40)
+    glow.ImageColor3 = glowColor
     glow.ImageTransparency = 0.7
     glow.ScaleType = Enum.ScaleType.Slice
     glow.SliceCenter = Rect.new(10, 10, 10, 10)
     glow.ZIndex = -1
-    glow.Parent = parent
+    
+    -- Safe parenting
+    local success = pcall(function()
+        glow.Parent = parent
+    end)
+    
+    if not success then
+        glow:Destroy()
+        return nil
+    end
+    
     return glow
 end
 
