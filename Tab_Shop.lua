@@ -30,20 +30,6 @@ function ShopAutoBuy.Init(Dependencies)
     local TweenService = game:GetService("TweenService")
     local UserInputService = game:GetService("UserInputService")
     
-    -- ===== FUNGSI TWEEN LOKAL =====
-    local function tween(object, properties, duration, easingStyle)
-        if not object then return nil end
-        
-        local tweenInfo = TweenInfo.new(
-            duration or 0.2, 
-            easingStyle or Enum.EasingStyle.Quint, 
-            Enum.EasingDirection.Out
-        )
-        local tween = TweenService:Create(object, tweenInfo, properties)
-        tween:Play()
-        return tween
-    end
-    
     -- ===== REMOTE SHOP =====
     local RequestShop = ReplicatedStorage:FindFirstChild("Remotes")
     if RequestShop then
@@ -176,13 +162,16 @@ function ShopAutoBuy.Init(Dependencies)
         })
     end
     
-    -- ===== MEMBUAT UI =====
+    -- ===== MEMBUAT UI DENGAN TABGROUP =====
     
-    -- SECTION 1: PENCARIAN & PEMILIHAN
-    Tab:CreateSection("🔍 PENCARIAN")
+    -- Buat TabGroup utama
+    local shopGroup = Tab:CreateTabGroup({Name = "🛒 SHOP MENU"})
+    
+    -- ===== TAB 1: PENCARIAN & PEMILIHAN =====
+    local searchTab = shopGroup:CreateSubTab("🔍 Cari")
     
     -- SEARCH BAR untuk filter bibit
-    searchBarRef = Tab:CreateSearchBar({
+    searchBarRef = searchTab:CreateSearchBar({
         Name = "SeedSearch",
         Text = "🔍 Cari Bibit",
         Placeholder = "Ketik nama bibit...",
@@ -205,10 +194,8 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    Tab:CreateSection("🌱 PILIH BIBIT")
-    
     -- DROPDOWN
-    dropdownRef = Tab:CreateDropdown({
+    dropdownRef = searchTab:CreateDropdown({
         Name = "SeedDropdown",
         Text = "🌱 Pilih Bibit",
         Options = seedDisplayOptions,
@@ -235,11 +222,20 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- SECTION 2: KONFIGURASI
-    Tab:CreateSection("⚙️ KONFIGURASI")
+    -- Info label
+    searchTab:CreateLabel({
+        Name = "InfoLabel",
+        Text = "🔍 Ketik nama bibit atau pilih dari dropdown",
+        Color = theme.TextMuted,
+        Size = 11,
+        Alignment = Enum.TextXAlignment.Center
+    })
+    
+    -- ===== TAB 2: KONFIGURASI =====
+    local configTab = shopGroup:CreateSubTab("⚙️ Config")
     
     -- JUMLAH BIBIT - CreateInput (number)
-    qtyInputRef = Tab:CreateInput({
+    qtyInputRef = configTab:CreateInput({
         Name = "QuantityInput",
         Text = "🔢 Jumlah Bibit",
         InputType = "number",
@@ -267,7 +263,7 @@ function ShopAutoBuy.Init(Dependencies)
     })
     
     -- DELAY - CreateInput (number)
-    delayInputRef = Tab:CreateInput({
+    delayInputRef = configTab:CreateInput({
         Name = "DelayInput",
         Text = "⏱️ Delay (detik)",
         InputType = "number",
@@ -295,11 +291,20 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- SECTION 3: AKSI
-    Tab:CreateSection("🎮 AKSI")
+    -- Info konfigurasi
+    configTab:CreateLabel({
+        Name = "ConfigInfo",
+        Text = "⚙️ Atur jumlah dan delay pembelian",
+        Color = theme.TextMuted,
+        Size = 11,
+        Alignment = Enum.TextXAlignment.Center
+    })
     
-    -- BELI SEKARANG - CreateButton (ganti dari toggle)
-    local buyButton = Tab:CreateButton({
+    -- ===== TAB 3: AKSI & STATUS =====
+    local actionTab = shopGroup:CreateSubTab("🎮 Aksi")
+    
+    -- BELI SEKARANG - CreateButton
+    local buyButton = actionTab:CreateButton({
         Name = "BuyNowButton",
         Text = "🛒 Beli Sekarang",
         Callback = function()
@@ -308,7 +313,7 @@ function ShopAutoBuy.Init(Dependencies)
     })
     
     -- AUTO BUY - Toggle
-    autoToggleRef = Tab:CreateToggle({
+    autoToggleRef = actionTab:CreateToggle({
         Name = "AutoBuyToggle",
         Text = "🤖 Auto Buy",
         CurrentValue = autoBuyEnabled,
@@ -327,22 +332,20 @@ function ShopAutoBuy.Init(Dependencies)
         end
     })
     
-    -- SECTION 4: FOOTER
-    Tab:CreateSection("📝 INFO")
-    
-    -- Informasi status
-    local statusLabel = Tab:CreateLabel({
+    -- Status label
+    local statusLabel = actionTab:CreateLabel({
         Name = "StatusLabel",
-        Text = string.format("➤ Bibit: %s | Jumlah: %d | Delay: %.1fs", 
+        Text = string.format("➤ Bibit: %s\n➤ Jumlah: %d\n➤ Delay: %.1fs", 
             selectedDisplay, buyQuantity, buyDelay),
         Color = theme.TextSecondary,
+        Size = 12,
         Alignment = Enum.TextXAlignment.Left
     })
     
-    -- Update label saat ada perubahan
+    -- Update status label
     local function updateStatusLabel()
         if statusLabel then
-            statusLabel.Text = string.format("➤ Bibit: %s | Jumlah: %d | Delay: %.1fs", 
+            statusLabel.Text = string.format("➤ Bibit: %s\n➤ Jumlah: %d\n➤ Delay: %.1fs", 
                 selectedDisplay, buyQuantity, buyDelay)
         end
     end
@@ -364,7 +367,8 @@ function ShopAutoBuy.Init(Dependencies)
         updateStatusLabel()
     end
     
-    Tab:CreateLabel({
+    -- Info tambahan
+    actionTab:CreateLabel({
         Name = "Footer",
         Text = "─────────────────────",
         Color = theme.TextMuted,
@@ -440,10 +444,21 @@ function ShopAutoBuy.Init(Dependencies)
             if searchBarRef and searchBarRef.SetText then
                 searchBarRef:SetText(query)
             end
+        end,
+        SwitchToTab = function(tabName)
+            -- Fungsi untuk berpindah tab (search, config, action)
+            if tabName == "search" then
+                -- Pindah ke tab pertama
+                -- Implementasi tergantung bagaimana tab group diakses
+            elseif tabName == "config" then
+                -- Pindah ke tab kedua
+            elseif tabName == "action" then
+                -- Pindah ke tab ketiga
+            end
         end
     }
     
-    print("✅ Shop module loaded - Dengan CreateInput, CreateButton, SearchBar")
+    print("✅ Shop module loaded - Dengan TabGroup (Search, Config, Action)")
     
     return cleanup
 end
