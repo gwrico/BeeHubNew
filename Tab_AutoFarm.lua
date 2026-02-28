@@ -30,9 +30,6 @@ function AutoFarm.Init(Dependencies)
     local customY = defaultPos.Y
     local customZ = defaultPos.Z
     
-    -- References untuk slider (agar bisa diupdate nilainya)
-    local xSlider, ySlider, zSlider
-    
     -- Auto harvest variables
     local isActive = false
     local HOLD_DURATION = 1.0      -- Hold 1 detik
@@ -43,6 +40,9 @@ function AutoFarm.Init(Dependencies)
     local autoWalkConnection = nil
     local STOP_DISTANCE = 3         -- Berhenti jika sudah dalam 3 stud
     local WALK_TRIGGER_DISTANCE = 10 -- Mulai berjalan jika jarak > 10 stud
+    
+    -- Label untuk menampilkan posisi
+    local positionLabel = nil
     
     -- Dapatkan remote PlantCrop
     local function getPlantRemote()
@@ -78,23 +78,17 @@ function AutoFarm.Init(Dependencies)
         return humanoidRootPart.Position
     end
     
-    -- Fungsi untuk update slider dengan nilai baru
-    local function updatePositionSliders(newPos)
+    -- Fungsi untuk update posisi dan tampilkan
+    local function updatePositionDisplay(newPos)
         if not newPos then return end
         
         customX = newPos.X
         customY = newPos.Y
         customZ = newPos.Z
         
-        -- Update slider jika reference tersedia
-        if xSlider then
-            xSlider:SetValue(customX)
-        end
-        if ySlider then
-            ySlider:SetValue(customY)
-        end
-        if zSlider then
-            zSlider:SetValue(customZ)
+        -- Update label jika ada
+        if positionLabel then
+            positionLabel.Text = string.format("📍 X: %.1f | Y: %.1f | Z: %.1f", customX, customY, customZ)
         end
         
         -- Tampilkan notifikasi
@@ -245,7 +239,7 @@ function AutoFarm.Init(Dependencies)
         end
     })
     
-    -- ===== RECORD POSISI SAJA =====
+    -- ===== RECORD POSISI =====
     Tab:CreateButton({
         Name = "RecordOnly",
         Text = "📍 Ambil Lokasi Tanam (Klik ini)",
@@ -260,51 +254,21 @@ function AutoFarm.Init(Dependencies)
                 return
             end
             
-            updatePositionSliders(playerPos)
-            
-            Bdev:Notify({
-                Title = "Position Recorded",
-                Content = "✅ Posisi tersimpan di slider!",
-                Duration = 2
-            })
+            updatePositionDisplay(playerPos)
         end
     })
     
-    -- ===== POSITION SLIDERS =====
+    -- ===== TAMPILAN POSISI SAAT INI =====
     Tab:CreateLabel({
-        Text = "📍 POSITION SETTINGS",
+        Text = "📍 POSISI TANAM TERSIMPAN",
         Size = 12,
         Color = Color3.fromRGB(255, 40, 40)
     })
     
-    xSlider = Tab:CreateSlider({
-        Name = "X Position",
-        Text = "X Coordinate",
-        Range = {customX - 50, customX + 50},
-        CurrentValue = customX,
-        Callback = function(val)
-            customX = val
-        end
-    })
-    
-    ySlider = Tab:CreateSlider({
-        Name = "Y Position",
-        Text = "Y Coordinate",
-        Range = {customY - 20, customY + 20},
-        CurrentValue = customY,
-        Callback = function(val)
-            customY = val
-        end
-    })
-    
-    zSlider = Tab:CreateSlider({
-        Name = "Z Position",
-        Text = "Z Coordinate",
-        Range = {customZ - 50, customZ + 50},
-        CurrentValue = customZ,
-        Callback = function(val)
-            customZ = val
-        end
+    positionLabel = Tab:CreateLabel({
+        Text = string.format("📍 X: %.1f | Y: %.1f | Z: %.1f", customX, customY, customZ),
+        Size = 14,
+        Color = Color3.fromRGB(255, 255, 255)
     })
     
     -- ===== AUTO WALK TOGGLE =====
