@@ -1,5 +1,5 @@
 -- ==============================================
--- 💰 AUTO FARM TAB MODULE - DENGAN AUTO RECORD POSISI + AUTO HARVEST
+-- 💰 AUTO FARM TAB MODULE - DENGAN AUTO RECORD POSISI + AUTO HARVEST + AUTO WALK
 -- ==============================================
 
 local AutoFarm = {}
@@ -37,6 +37,12 @@ function AutoFarm.Init(Dependencies)
     local isActive = false
     local HOLD_DURATION = 1.0      -- Hold 1 detik
     local DELAY_BETWEEN = 0.5      -- Delay 0.5 detik antar harvest
+    
+    -- ===== AUTO WALK VARIABLES =====
+    local autoWalkEnabled = false
+    local autoWalkConnection = nil
+    local STOP_DISTANCE = 3         -- Berhenti jika sudah dalam 3 stud
+    local WALK_TRIGGER_DISTANCE = 10 -- Mulai berjalan jika jarak > 10 stud
     
     -- Dapatkan remote PlantCrop
     local function getPlantRemote()
@@ -99,22 +105,86 @@ function AutoFarm.Init(Dependencies)
         })
     end
     
+    -- ===== AUTO WALK FUNCTIONS =====
+    
+    -- Fungsi untuk membuat karakter berjalan ke target
+    local function walkToTarget(targetPos)
+        local player = Players.LocalPlayer
+        local character = player.Character
+        if not character then return false end
+        
+        local humanoid = character:FindFirstChild("Humanoid")
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        
+        if not humanoid or not hrp then return false end
+        
+        -- Hitung jarak ke target
+        local currentPos = hrp.Position
+        local distance = (targetPos - currentPos).Magnitude
+        
+        -- Jika sudah dekat, berhenti
+        if distance <= STOP_DISTANCE then
+            humanoid:MoveTo(currentPos)  -- Stop moving
+            return true
+        end
+        
+        -- Gerakkan karakter ke target
+        humanoid:MoveTo(targetPos)
+        
+        -- Force jump jika ada halangan atau sedang jatuh
+        if humanoid:GetState() == Enum.HumanoidStateType.Freefall or 
+           humanoid:GetState() == Enum.HumanoidStateType.StrafingNoPhysics then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+        
+        return false
+    end
+    
+    -- Loop untuk auto walk
+    local function startAutoWalk()
+        if autoWalkConnection then
+            autoWalkConnection:Disconnect()
+        end
+        
+        autoWalkConnection = RunService.Heartbeat:Connect(function()
+            if not autoWalkEnabled then return end
+            
+            local player = Players.LocalPlayer
+            local character = player.Character
+            if not character then return end
+            
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+            
+            -- Posisi target tanam
+            local targetPos = Vector3.new(customX, customY, customZ)
+            local currentPos = hrp.Position
+            local distance = (targetPos - currentPos).Magnitude
+            
+            -- Jika terlalu jauh, berjalan kembali
+            if distance > WALK_TRIGGER_DISTANCE then
+                walkToTarget(targetPos)
+            end
+        end)
+    end
+    
     -- ===== CEK KETERSEDIAAN REMOTE =====
     local plantRemote = getPlantRemote()
     if plantRemote then
         Bdev:Notify({
             Title = "PlantCrop Ready",
-            Content = "✅Join Discord ABCD",
+            Content = "✅ Join Discord ABCD",
             Duration = 3
         })
     else
         Bdev:Notify({
             Title = "Warning",
-            Content = "⚠️Kamu Belum Join Discord",
+            Content = "⚠️ Kamu Belum Join Discord",
             Duration = 4
         })
     end
-     -- ===== AUTO PLANT CROPS =====
+    
+    -- ===== AUTO PLANT CROPS =====
     Tab:CreateToggle({
         Name = "AutoPlant",
         Text = "🌱 Auto Plant",
@@ -178,7 +248,7 @@ function AutoFarm.Init(Dependencies)
     -- ===== RECORD POSISI SAJA =====
     Tab:CreateButton({
         Name = "RecordOnly",
-        Text = "📍 Ambil Lokasi Tanam ( Klik ini )",
+        Text = "📍 Ambil Lokasi Tanam (Klik ini)",
         Callback = function()
             local playerPos = getPlayerPosition()
             if not playerPos then
@@ -195,6 +265,113 @@ function AutoFarm.Init(Dependencies)
             Bdev:Notify({
                 Title = "Position Recorded",
                 Content = "✅ Posisi tersimpan di slider!",
+                Duration = 2
+            })
+        end
+    })
+    
+    -- ===== POSITION SLIDERS =====
+    Tab:CreateLabel({
+        Text = "📍 POSITION SETTINGS",
+        Size = 12,
+        Color = Color3.fromRGB(255, 40, 40)
+    })
+    
+    xSlider = Tab:CreateSlider({
+        Name = "X Position",
+        Text = "X Coordinate",
+        Range = {customX - 50, customX + 50},
+        CurrentValue = customX,
+        Callback = function(val)
+            customX = val
+        end
+    })
+    
+    ySlider = Tab:CreateSlider({
+        Name = "Y Position",
+        Text = "Y Coordinate",
+        Range = {customY - 20, customY + 20},
+        CurrentValue = customY,
+        Callback = function(val)
+            customY = val
+        end
+    })
+    
+    zSlider = Tab:CreateSlider({
+        Name = "Z Position",
+        Text = "Z Coordinate",
+        Range = {customZ - 50, customZ + 50},
+        CurrentValue = customZ,
+        Callback = function(val)
+            customZ = val
+        end
+    })
+    
+    -- ===== AUTO WALK TOGGLE =====
+    Tab:CreateToggle({
+        Name = "AutoWalk",
+        Text = "🚶 Auto Walk ke Posisi Tanam",
+        CurrentValue = false,
+        Callback = function(value)
+            autoWalkEnabled = value
+            
+            if value then
+                Bdev:Notify({
+                    Title = "Auto Walk",
+                    Content = "🚶 Akan berjalan kembali ke posisi tanam jika menjauh",
+                    Duration = 3
+                })
+                startAutoWalk()
+            else
+                Bdev:Notify({
+                    Title = "Auto Walk",
+                    Content = "❌ Auto Walk disabled",
+                    Duration = 2
+                })
+                if autoWalkConnection then
+                    autoWalkConnection:Disconnect()
+                    autoWalkConnection = nil
+                end
+            end
+        end
+    })
+    
+    -- ===== WALK TRIGGER DISTANCE SLIDER =====
+    Tab:CreateSlider({
+        Name = "WalkTriggerDistance",
+        Text = "🚶 Jarak Trigger Auto Walk (stud)",
+        Range = {5, 30},
+        CurrentValue = 10,
+        Callback = function(val)
+            WALK_TRIGGER_DISTANCE = val
+        end
+    })
+    
+    -- ===== WALK NOW BUTTON =====
+    Tab:CreateButton({
+        Name = "WalkNow",
+        Text = "🚶 Walk ke Posisi Sekarang",
+        Callback = function()
+            local player = Players.LocalPlayer
+            local character = player.Character
+            if not character then 
+                Bdev:Notify({
+                    Title = "Error",
+                    Content = "❌ Karakter tidak ditemukan!",
+                    Duration = 2
+                })
+                return
+            end
+            
+            local humanoid = character:FindFirstChild("Humanoid")
+            if not humanoid then return end
+            
+            local targetPos = Vector3.new(customX, customY, customZ)
+            humanoid:MoveTo(targetPos)
+            
+            Bdev:Notify({
+                Title = "Walking",
+                Content = "🚶 Berjalan ke posisi tanam...",
                 Duration = 2
             })
         end
@@ -231,7 +408,7 @@ function AutoFarm.Init(Dependencies)
             end
         end
     end
-      
+    
     -- Tombol AUTO HARVEST
     Tab:CreateToggle({
         Name = "AutoHarvest",
@@ -260,9 +437,14 @@ function AutoFarm.Init(Dependencies)
     -- Tombol STOP HARVEST
     Tab:CreateButton({
         Name = "StopHarvest",
-        Text = "⏹️ STOP",
+        Text = "⏹️ STOP HARVEST",
         Callback = function()
             isActive = false
+            Bdev:Notify({
+                Title = "Harvest",
+                Content = "⏹️ Auto harvest stopped",
+                Duration = 2
+            })
         end
     })
     
