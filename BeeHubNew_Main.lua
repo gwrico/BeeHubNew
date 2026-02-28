@@ -1,10 +1,10 @@
 -- ==============================================
--- 🎮 BeeHub v1.0 - MODULAR SYSTEM (MAIN)
+-- 🎮 BEEHUB v4.0 - MODULAR SYSTEM (MAIN)
 -- ==============================================
 
 -- Configuration
 local CONFIG = {
-    SIMPLEGUI_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/SimpleGUI_BeeHub.lua",
+    SIMPLEGUI_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/SimpleGUI_NEO.lua",
     MODULES_URL = "https://raw.githubusercontent.com/gwrico/BeeHubNew/refs/heads/main/",
     LOAD_TIMEOUT = 10
 }
@@ -21,9 +21,72 @@ end
 
 local GUI = SimpleGUI.new()
 
--- Create main window dengan nama BEEHUB (bukan NEO HUB)
+-- ===== ANTI-DEBUG UNTUK SEMUA MODULE =====
+-- Letakkan di SINI, sebelum create window
+pcall(function()
+    -- Proteksi debug.getinfo
+    if debug and debug.getinfo then
+        local oldGetInfo = debug.getinfo
+        debug.getinfo = function(...)
+            local result = oldGetInfo(...)
+            if result and result.source then
+                -- Sembunyikan semua referensi ke script BeeHub
+                result.source = result.source:gsub("BeeHub", "Core")
+                result.source = result.source:gsub("AutoFarm", "System")
+                result.source = result.source:gsub("Teleport", "Network")
+                result.source = result.source:gsub("Discord", "UI")
+                result.source = result.source:gsub("Misc", "Util")
+                
+                -- Buat seolah-olah dari Roblox
+                if result.source:find("StarterPlayer") or result.source:find("BeeHub") then
+                    result.source = "=[C]"
+                end
+            end
+            return result
+        end
+    end
+    
+    -- Proteksi getgenv (global environment)
+    if getgenv then
+        -- Sembunyikan fungsi-fungsi penting dari global
+        local protectedEnv = setmetatable({}, {
+            __index = getgenv(),
+            __newindex = getgenv()
+        })
+        
+        -- Ganti _G dengan environment yang dilindungi
+        _G = protectedEnv
+    end
+    
+    -- Proteksi debug.getregistry
+    if debug and debug.getregistry then
+        local oldRegistry = debug.getregistry
+        debug.getregistry = function(...)
+            local registry = oldRegistry(...)
+            -- Bersihkan registry dari referensi BeeHub
+            if registry and type(registry) == "table" then
+                -- Implementasi sesuai kebutuhan
+            end
+            return registry
+        end
+    end
+    
+    -- Proteksi getgc (garbage collection)
+    if getgc then
+        local oldGetGC = getgc
+        getgc = function(...)
+            local gc = oldGetGC(...)
+            -- Filter hasil GC
+            return gc
+        end
+    end
+    
+    print("✅ Anti-Debug activated for all modules")
+end)
+
+-- Create main window
 local Window = GUI:CreateWindow({
-    Name = "⚡ BeeHub v1.0 - Freemium",  -- ← Kembali ke BEEHUB
+    Name = "⚡ BEEHUB v4.0 - Futuristic Edition",
     Size = UDim2.new(0, 700, 0, 500)
 })
 
@@ -49,7 +112,8 @@ local Shared = {
         Workspace = game:GetService("Workspace"),
         UserInputService = game:GetService("UserInputService"),
         RunService = game:GetService("RunService"),
-        ReplicatedStorage = game:GetService("ReplicatedStorage")
+        ReplicatedStorage = game:GetService("ReplicatedStorage"),
+        VirtualInputManager = game:GetService("VirtualInputManager")
     },
     
     Variables = {
@@ -70,6 +134,8 @@ local Shared = {
     Tabs = {},
     Modules = { Loaded = {}, Errors = {} }
 }
+
+-- ... (lanjut dengan module loader dan initialize modules)
 
 -- Module loader
 function Shared.LoadModule(moduleName, urlSuffix)
