@@ -1,5 +1,5 @@
 -- ==============================================
--- 🔧 CORE SHARED - MURNI PENGHUBUNG (DENGAN RANDOMISASI)
+-- 🔧 CORE SHARED - MURNI PENGHUBUNG
 -- ==============================================
 
 local Core = {}
@@ -79,7 +79,6 @@ function Core.Init(Shared)
             return true
         end,
         
-        -- PERFORM ACTION DENGAN RANDOMISASI (UNTUK BYPASS ADONIS)
         performAction = function(method)
             local character = Shared.Functions.getCharacter()
             if not character then return false end
@@ -93,29 +92,14 @@ function Core.Init(Shared)
                 end
             end
             
-            -- Method 2: Virtual click dengan RANDOMISASI LENGKAP
+            -- Method 2: Virtual click
             if method == "click" or not method then
                 local vim = Shared.Services.VirtualInputManager
-                
-                -- RANDOMISASI: Posisi mouse acak
-                local x = math.random(100, 900)
-                local y = math.random(100, 600)
-                
-                -- RANDOMISASI: Hold time bervariasi
-                local holdTime = 0.03 + (math.random() * 0.1)
-                
-                -- RANDOMISASI: Delay sebelum click
-                task.wait(math.random() * 0.1)
-                
                 pcall(function()
-                    vim:SendMouseButtonEvent(x, y, 0, true, game, 1)
-                    task.wait(holdTime)
-                    vim:SendMouseButtonEvent(x, y, 0, false, game, 1)
+                    vim:SendMouseButtonEvent(0, 0, 0, true, game, 1)
+                    task.wait(0.05)
+                    vim:SendMouseButtonEvent(0, 0, 0, false, game, 1)
                 end)
-                
-                -- RANDOMISASI: Delay setelah click
-                task.wait(math.random() * 0.1)
-                
                 return true
             end
             
@@ -144,25 +128,10 @@ function Core.Init(Shared)
                 end
             end
             return false
-        end,
-        
-        -- ----- ANTI-DETECTION UTILITY -----
-        getRandomDelay = function(baseMin, baseMax)
-            -- Fungsi untuk menghasilkan delay acak yang tidak terduga
-            local variation = math.random(-30, 30) / 100
-            return (baseMin + math.random() * (baseMax - baseMin)) + variation
-        end,
-        
-        humanizedWait = function(minSec, maxSec)
-            -- Delay dengan pola seperti manusia
-            minSec = minSec or 0.5
-            maxSec = maxSec or 1.5
-            local waitTime = Shared.Functions.getRandomDelay(minSec, maxSec)
-            task.wait(math.max(0.1, waitTime))
         end
     }
     
-    print("✅ Core Shared initialized (with Adonis bypass)")
+    --print("✅ Core Shared (Penghubung) initialized")
 end
 
 return Core
